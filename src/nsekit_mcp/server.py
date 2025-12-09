@@ -2,8 +2,7 @@ from mcp.server.fastmcp import FastMCP
 from NseKit import NseKit, Moneycontrol
 import pandas as pd
 import time                      
-from threading import Lock
-import asyncio    
+from threading import Lock 
 
 # ================================================================
 #                   RATE LIMIT CONTROL (NSE Safe)
@@ -44,6 +43,7 @@ def df_to_json(data):
 # =====================================================================
 # MARKET STATUS & TRADING INFO
 # =====================================================================
+
 
 @mcp.tool()
 def market_status(mode: str = "Market Status"):
@@ -258,7 +258,7 @@ def all_indices_live():
     """
     TOOL: all_indices_live
     DESCRIPTION:
-        Live values of all 150+ NSE indices.
+        Live values(open, high, low, close(last),variation,percentChange,yearHigh,yearLow,pe,pb,dy,declines,advances,unchanged) of all 150+ NSE indices.
     RETURNS:
         JSON list
     CATEGORY:
@@ -322,13 +322,13 @@ def nifty500_constituents(list_only: bool = False):
     return df_to_json(get.nse_6m_nifty_500(list_only=list_only))
 
 @mcp.tool()
-def fno_list(entity_type: str = "stock", list_only: bool = False):
+def fno_list(mode: str = "stocks", list_only: bool = False):
     """
     TOOL: fno_list
     DESCRIPTION:
         All F&O eligible stocks or indices.
     PARAMETERS:
-        entity_type: str – "stock" or "index"
+        entity_type: str – "stocks" or "index"
         list_only: bool – Only symbols if True
     RETURNS:
         JSON
@@ -336,7 +336,7 @@ def fno_list(entity_type: str = "stock", list_only: bool = False):
         FnO_Reference
     """
     rate_limit()
-    return df_to_json(get.nse_eom_fno_full_list(entity_type, list_only=list_only))
+    return df_to_json(get.nse_eom_fno_full_list(mode, list_only=list_only))
 
 @mcp.tool()
 def equity_master(list_only: bool = False):
@@ -360,38 +360,53 @@ def equity_master(list_only: bool = False):
 # =====================================================================
 
 @mcp.tool()
-def option_chain(symbol: str, is_index: bool = False, expiry: str = None, compact: bool = False):
+def option_chain(symbol: str, expiry: str = None, compact: bool = False):
     """
     TOOL: option_chain
     DESCRIPTION:
         Full live option chain with OI, volume, IV, PCR, Max Pain.
     PARAMETERS:
         symbol: str – "RELIANCE", "NIFTY", "BANKNIFTY"
-        is_index: bool – True for indices
-        expiry: str – Optional "DD-MM-YYYY"
+        expiry: str – Optional "DD-MMM-YYYY"
         compact: bool – Compact OI view
     RETURNS:
         Complete option chain JSON
     CATEGORY:
         FnO_Live
+    EXAMPLES:
+        (get.fno_live_option_chain("RELIANCE"))                              Option chain for a stock symbol
+        (get.fno_live_option_chain("NIFTY"))                                 Option chain for an index
+        (get.fno_live_option_chain("RELIANCE", expiry_date="28-Oct-2025"))    Option chain with specific expiry
+        (get.fno_live_option_chain("RELIANCE", oi_mode="compact"))           Compact option chain data
     """
     rate_limit()
     mode = "compact" if compact else None
-    return df_to_json(get.fno_live_option_chain(symbol, indices=is_index, expiry_date=expiry, oi_mode=mode))
+    return df_to_json(get.fno_live_option_chain(symbol, expiry_date=expiry, oi_mode=mode))
 
 @mcp.tool()
-def expiry_dates(symbol: str = "NIFTY", filter_type: str = "All"):
+def expiry_dates(symbol: str = "NIFTY", filter_type: str = None):
     """
     TOOL: expiry_dates
     DESCRIPTION:
-        Get current, weekly, monthly expiry dates.
+        Get All expiry dates or find particularly current, weekly, monthly expiry dates.
     PARAMETERS:
         symbol: str – Stock or index
-        filter_type: str – "Current" | "Next Week" | "Month" | "All"
+        filter_type: str – "Current" | "Next Week" | "Month" | "All" → ["28-10-2025", "04-11-2025", "25-11-2025"]
     RETURNS:
         List of expiry dates
     CATEGORY:
         FnO_Reference
+    EXAMPLES:
+        (get.fno_expiry_dates())                                 # Nifty All Expiry Date
+        (get.fno_expiry_dates("TCS"))                            # TCS All Expiry Date
+
+        (get.fno_expiry_dates("NIFTY", "Current"))               # Nifty Current Expiry Date only → "28-10-2025"
+        (get.fno_expiry_dates("NIFTY", "Next Week"))             # Nifty Next Week Expiry Date only → "04-11-2025"
+        (get.fno_expiry_dates("NIFTY", "Month"))                 # Nifty Month Expiry Date only → "25-11-2025"
+        (get.fno_expiry_dates("NIFTY", "All"))                   # → ["28-10-2025", "04-11-2025", "25-11-2025"]
+
+        (get.fno_expiry_dates("TCS", "Current"))                 # TCS Current Expiry Date only
+        (get.fno_expiry_dates("TCS", "Month"))                   # TCS Next Month Expiry Date only
     """
     rate_limit()
     return df_to_json(get.fno_expiry_dates(symbol, filter_type))
@@ -424,7 +439,7 @@ def stock_quote(symbol: str):
     """
     TOOL: stock_quote
     DESCRIPTION:
-        Full live quote: price, change, volume, delivery, 5-level depth.
+        Full live quote: price, change, volume, VWAP, delivery, 5-level market depth, Sector, Industry, BasicIndustry, totalBuyQuantity, totalSellQuantity, UpperCircuit, LowerCircuit.
     PARAMETERS:
         symbol: str – NSE symbol
     RETURNS:
@@ -471,7 +486,7 @@ def hit_52week_high():
     """
     TOOL: hit_52week_high
     DESCRIPTION:
-        Stocks hitting 52-week high today.
+        live market stocks hitting 52-week high today.
     RETURNS:
         JSON list
     CATEGORY:
@@ -485,7 +500,7 @@ def hit_52week_low():
     """
     TOOL: hit_52week_low
     DESCRIPTION:
-        Stocks hitting 52-week low today.
+        live market stocks hitting 52-week low today.
     RETURNS:
         JSON list
     CATEGORY:
@@ -582,7 +597,7 @@ def ipo_preopen_today():
     return df_to_json(get.ipo_preopen())
 
 @mcp.tool()
-def ipo_tracker(board: str = None):
+def ipo_tracker(board: str = "Mainboard"):
     """
     TOOL: ipo_tracker
     DESCRIPTION:
@@ -603,20 +618,76 @@ def ipo_tracker(board: str = None):
 # =====================================================================
 
 @mcp.tool()
-def index_history(index_name: str, period: str = "1Y", from_date: str = None, to_date: str = None):
+def index_history(index: str, period: str = None, from_date: str = None, to_date: str = None):
     """
     TOOL: index_history
     DESCRIPTION:
-        Historical OHLC + turnover for any index.
+        Fetch historical OHLC + turnover for any index.
     PARAMETERS:
-        period: str – "1D"|"1M"|"6M"|"1Y"|"MAX"|...
+        index: str – Name of the index
+        period: str – Shortcut period ("1D","1W","1M","3M","6M","1Y","2Y","5Y","10Y","YTD","MAX")
+        from_date: str – Start date in DD-MM-YYYY (optional)
+        to_date: str – End date in DD-MM-YYYY (optional)
     RETURNS:
-        JSON daily data
+        JSON with daily OHLC + turnover
     CATEGORY:
         Historical
+    EXAMPLES:
+        index_history("NIFTY 50", period="1Y")
+        index_history("NIFTY 50", from_date="01-01-2025")
+        index_history("NIFTY BANK", from_date="01-01-2025", to_date="17-10-2025")
     """
+    
     rate_limit()
-    return df_to_json(get.index_historical_data(index_name, from_date or period, to_date))
+    return df_to_json(get.index_historical_data(index, period, from_date, to_date))
+
+
+# from datetime import datetime
+
+# @mcp.tool()
+# def index_history(index: str, period: str = None, from_date: str = None, to_date: str = None):
+#     """
+#     TOOL: index_history
+#     DESCRIPTION:
+#         Fetch historical OHLC + turnover for any index.
+#     PARAMETERS:
+#         index: str – Name of the index
+#         period: str – Shortcut period ("1D","1W","1M","3M","6M","1Y","2Y","5Y","10Y","YTD","MAX")
+#         from_date: str – Start date in DD-MM-YYYY (optional)
+#         to_date: str – End date in DD-MM-YYYY (optional)
+#     RETURNS:
+#         JSON with daily OHLC + turnover
+#     CATEGORY:
+#         Historical
+#     EXAMPLES:
+#         index_history("NIFTY 50", period="1Y")
+#         index_history("NIFTY 50", from_date="01-01-2025")
+#         index_history("NIFTY BANK", from_date="01-01-2025", to_date="17-10-2025")
+#     """
+#     rate_limit()
+    
+#     # Normalize empty strings to None
+#     period = period or None
+#     from_date = from_date or None
+#     to_date = to_date or None
+    
+#     # Validate MCP argument rules
+#     if period and (from_date or to_date):
+#         return {"error": "Invalid arguments. Use (index, period) OR (index, from_date) OR (index, from_date, to_date)."}
+#     if not period and not from_date:
+#         return {"error": "Either period or from_date must be provided."}
+    
+#     # Auto-set to_date if from_date provided but to_date is None
+#     if from_date and not to_date:
+#         to_date = datetime.now().strftime("%d-%m-%Y")
+    
+#     # Fetch data
+#     try:
+#         data = get.index_historical_data(index, period, from_date, to_date)
+#         return df_to_json(data)
+#     except Exception as e:
+#         return {"error": str(e)}
+
 
 @mcp.tool()
 def stock_history(symbol: str, period: str = "1Y", from_date: str = None, to_date: str = None):
@@ -631,10 +702,6 @@ def stock_history(symbol: str, period: str = "1Y", from_date: str = None, to_dat
     """
     rate_limit()
     return df_to_json(get.cm_hist_security_wise_data(symbol, period or from_date, to_date))
-
-
-
-
 
 
 # =====================================================================
@@ -799,7 +866,7 @@ def cm_live_equity_info(symbol: str):
     """
     rate_limit()
     # Original: get.cm_live_equity_info("RELIANCE")
-    return df_to_json(get.cm_live_equity_info(symbol))
+    return (get.cm_live_equity_info(symbol))
 
 
 @mcp.tool()
@@ -1115,39 +1182,21 @@ def fno_live_change_in_oi():
 
 
 @mcp.tool()
-def fno_live_nifty_active_contracts(symbol: str = "NIFTY", expiry_date: str = None):
+def fno_live_active_contracts(symbol: str = "NIFTY", expiry_date: str = None):
     """
-    TOOL: fno_live_nifty_active_contracts
+    TOOL: fno_live_active_contracts
     DESCRIPTION:
-        Active NIFTY/BANKNIFTY option contracts
+        Active NIFTY/BANKNIFTY & stock option contracts
     PARAMETERS:
-        symbol: str – "NIFTY", "BANKNIFTY"
+        symbol: str – "NIFTY", "BANKNIFTY" , RELIANCE , TCS, etc
         expiry_date: str – optional "DD-MM-YYYY"
     RETURNS:
-        Active contracts
+        Active index or stock options contracts
     CATEGORY:
         FnO_Live
     """
     rate_limit()
-    return df_to_json(get.fno_live_nifty_active_contracts(symbol, expiry_date=expiry_date))
-
-
-@mcp.tool()
-def fno_live_stock_active_contracts(symbol: str, expiry_date: str = None):
-    """
-    TOOL: fno_live_stock_active_contracts
-    DESCRIPTION:
-        Active stock option contracts
-    PARAMETERS:
-        symbol: str – e.g., "RELIANCE"
-        expiry_date: str – optional
-    RETURNS:
-        Active stock options
-    CATEGORY:
-        FnO_Live
-    """
-    rate_limit()
-    return df_to_json(get.fno_live_stock_active_contracts(symbol, expiry_date=expiry_date))
+    return df_to_json(get.fno_live_active_contracts(symbol, expiry_date=expiry_date))
 
 
 # =====================================================================
@@ -1189,6 +1238,27 @@ def market_activity_report(date: str):
     rate_limit()
     # Original: get.cm_eod_market_activity_report("17-10-2025")
     return df_to_json(get.cm_eod_market_activity_report(date))
+
+# @mcp.tool()
+# def market_activity_report(date: str):
+#     """
+#     TOOL: market_activity_report
+#     DESCRIPTION:
+#         Daily market turnover, advances/declines, top gainers/losers.
+#     PARAMETERS:
+#         date: str – Trade date in "DD-MM-YYYY"
+#     RETURNS:
+#         Full market activity report
+#     CATEGORY:
+#         Equity_EOD
+#     """
+#     rate_limit()
+
+#     date_obj = datetime.strptime(date, "%d-%m-%Y").date()
+
+#     data = get.cm_eod_market_activity_report(date_obj)
+
+#     return (data)
 
 
 @mcp.tool()
@@ -1246,11 +1316,11 @@ def week_52_high_low(date: str):
 
 
 @mcp.tool()
-def bulk_deals_latest():
+def bulk_deals_EOD():
     """
-    TOOL: bulk_deals_latest
+    TOOL: bulk_deals_EOD
     DESCRIPTION:
-        Latest bulk deals across NSE/BSE (client-level).
+        End of day based bulk deals across NSE/BSE (client-level).
     PARAMETERS: None
     RETURNS:
         Today's bulk deals
@@ -1263,11 +1333,11 @@ def bulk_deals_latest():
 
 
 @mcp.tool()
-def block_deals_latest():
+def block_deals_EOD():
     """
-    TOOL: block_deals_latest
+    TOOL: block_deals_EOD
     DESCRIPTION:
-        Latest block deals (large negotiated trades).
+        End of day based block deals (large negotiated trades).
     PARAMETERS: None
     RETURNS:
         Today's block deals
@@ -1284,7 +1354,7 @@ def short_selling(date: str):
     """
     TOOL: short_selling
     DESCRIPTION:
-        Stocks disclosed for short selling on a given date.
+        Stocks disclosed for short selling on a given date if user no date given last trading date is used.
     PARAMETERS:
         date: str – "DD-MM-YYYY"
     RETURNS:
@@ -1304,7 +1374,7 @@ def surveillance_indicator(date: str):
     DESCRIPTION:
         Stocks under ASM/GSM/Z-category surveillance.
     PARAMETERS:
-        date: str – "DD-MM-YY" (2-digit year)
+        date: str – "DD-MM-YY" (2-digit year) if user no date given last trading date is used.
     RETURNS:
         Surveillance list
     CATEGORY:
@@ -1339,7 +1409,7 @@ def equity_band_changes(date: str):
     DESCRIPTION:
         Stocks moved to/from price bands (2%, 5%, 10%, 20%).
     PARAMETERS:
-        date: str – "DD-MM-YYYY"
+        date: str – "DD-MM-YYYY"    if user no date given last trading date is used.
     RETURNS:
         Price band changes
     CATEGORY:
@@ -1357,7 +1427,7 @@ def equity_price_bands_eod(date: str):
     DESCRIPTION:
         Applicable price bands for all stocks on a given EOD.
     PARAMETERS:
-        date: str – "DD-MM-YYYY"
+        date: str – "DD-MM-YYYY"    if user no date given last trading date is used.
     RETURNS:
         Full price band data
     CATEGORY:
@@ -1401,7 +1471,7 @@ def pe_ratio(date: str):
     DESCRIPTION:
         PE, PB, Dividend Yield for all listed companies.
     PARAMETERS:
-        date: str – "DD-MM-YY"
+        date: str – "DD-MM-YY"  if user no date given last trading date is used.
     RETURNS:
         Valuation ratios
     CATEGORY:
@@ -1419,7 +1489,7 @@ def market_cap(date: str):
     DESCRIPTION:
         Market capitalization of all companies.
     PARAMETERS:
-        date: str – "DD-MM-YY"
+        date: str – "DD-MM-YY"  if user no date given last trading date is used.
     RETURNS:
         Market cap data
     CATEGORY:
@@ -1609,7 +1679,7 @@ def fno_bhavcopy(date: str):
     DESCRIPTION:
         Full F&O bhavcopy (futures + options).
     PARAMETERS:
-        date: str – "DD-MM-YYYY"
+        date: str – "DD-MM-YYYY"    if user no date given last trading date is used.
     RETURNS:
         Complete F&O closing data
     CATEGORY:
@@ -1627,7 +1697,7 @@ def fii_stats_fno(date: str):
     DESCRIPTION:
         FII activity in F&O segment (Index/Stock, Long/Short).
     PARAMETERS:
-        date: str – "DD-MM-YYYY"
+        date: str – "DD-MM-YYYY"    if user no date given last trading date is used.
     RETURNS:
         FII F&O stats
     CATEGORY:
@@ -1645,7 +1715,7 @@ def top10_futures(date: str):
     DESCRIPTION:
         Top 10 most active futures contracts by volume/OI.
     PARAMETERS:
-        date: str – "DD-MM-YYYY"
+        date: str – "DD-MM-YYYY"    if user no date given last trading date is used.
     RETURNS:
         Top 10 futures
     CATEGORY:
@@ -1653,7 +1723,7 @@ def top10_futures(date: str):
     """
     rate_limit()
     # Original: get.fno_eod_top10_fut("17-10-2025")
-    return df_to_json(get.fno_eod_top10_fut(date))
+    return (get.fno_eod_top10_fut(date))
 
 
 @mcp.tool()
@@ -1663,7 +1733,7 @@ def top20_options(date: str):
     DESCRIPTION:
         Top 20 most active options contracts.
     PARAMETERS:
-        date: str – "DD-MM-YYYY"
+        date: str – "DD-MM-YYYY"    if user no date given last trading date is used.
     RETURNS:
         Top 20 options
     CATEGORY:
@@ -1671,7 +1741,7 @@ def top20_options(date: str):
     """
     rate_limit()
     # Original: get.fno_eod_top20_opt("17-10-2025")
-    return df_to_json(get.fno_eod_top20_opt(date))
+    return (get.fno_eod_top20_opt(date))
 
 
 @mcp.tool()
@@ -1681,7 +1751,7 @@ def security_ban_list(date: str):
     DESCRIPTION:
         Stocks under F&O ban period.
     PARAMETERS:
-        date: str – "DD-MM-YYYY"
+        date: str – "DD-MM-YYYY"    if user no date given last trading date is used.
     RETURNS:
         Ban list
     CATEGORY:
@@ -1699,7 +1769,7 @@ def mwpl_data(date: str):
     DESCRIPTION:
         Market Wide Position Limits (MWPL) and usage %.
     PARAMETERS:
-        date: str – "DD-MM-YYYY"
+        date: str – "DD-MM-YYYY"    if user no date given last trading date is used.
     RETURNS:
         MWPL report
     CATEGORY:
@@ -1717,7 +1787,7 @@ def combined_oi(date: str):
     DESCRIPTION:
         Combined futures & options open interest.
     PARAMETERS:
-        date: str – "DD-MM-YYYY"
+        date: str – "DD-MM-YYYY"    if user no date given last trading date is used.
     RETURNS:
         OI snapshot
     CATEGORY:
@@ -1735,7 +1805,7 @@ def participant_oi(date: str):
     DESCRIPTION:
         FII, DII, Pro, Client wise open interest.
     PARAMETERS:
-        date: str – "DD-MM-YYYY"
+        date: str – "DD-MM-YYYY"    if user no date given last trading date is used.
     RETURNS:
         Participant OI
     CATEGORY:
@@ -1753,7 +1823,7 @@ def participant_volume(date: str):
     DESCRIPTION:
         Participant-wise trading volume in F&O.
     PARAMETERS:
-        date: str – "DD-MM-YYYY"
+        date: str – "DD-MM-YYYY"    if user no date given last trading date is used.
     RETURNS:
         Volume breakdown
     CATEGORY:
@@ -1904,13 +1974,161 @@ def sebi_data_pages(page: int = 1):
     # Original: get.sebi_data()
     return df_to_json(get.sebi_data(page))
 
-# =====================================================================
-# START SERVER
-# =====================================================================
 
+@mcp.tool()
+def nifty_chart(timeframe: str = "1D"):
+    """
+    TOOL: nifty_chart
+
+    DESCRIPTION:
+        Retrieves intraday or historical price chart data for the NIFTY 50 index 
+        based on the selected timeframe.  
+        The tool internally connects to the NSE Next-API `getGraphChart` endpoint,
+        handles cookie/session rotation automatically, and normalizes the response 
+        into a clean DataFrame before converting it to JSON.
+
+    PARAMETERS:
+        timeframe (str):
+            Defines the chart duration or lookback period.
+            Examples:
+                "1D" – 1-day intraday chart 
+                "1M" – 1-month chart  
+                "3M" – 3-month chart  
+                "6M" – 6-month chart  
+                "1Y" – 1-year historical chart  
+            note: The NSE server will return only the valid supported timeframes.
+
+    RETURNS:
+        JSON chart data containing:
+            - datetime_utc (string): Timestamp in UTC formatted as "%Y-%m-%d %H:%M:%S"
+            - price (float): Index price at that timestamp
+            - flag (string): Event marker provided by NSE (e.g., "PO"- Pre Open Market, "NM"- Normal Market, etc.) 
+
+    CATEGORY:
+        ChartData
+        (All market chart–related tools fall under this category.)
+    """
+    rate_limit()
+    return df_to_json(get.nifty_chart(timeframe))
+
+
+@mcp.tool()
+def stock_chart(symbol: str, timeframe: str = "1D"):
+    """
+    TOOL: stock_chart
+
+    DESCRIPTION:
+        Retrieves intraday or historical price chart data for the stock 
+        based on the selected timeframe.  
+        The tool internally connects to the NSE Next-API `getGraphChart` endpoint,
+        handles cookie/session rotation automatically, and normalizes the response 
+        into a clean DataFrame before converting it to JSON.
+
+    PARAMETERS:
+        timeframe (str):
+            Defines the chart duration or lookback period.
+            Examples:
+                "1D" – 1-day intraday chart 
+                "1W" – 1-week chart 
+                "1M" – 1-month chart  
+                "1Y" – 1-year historical chart  
+            note: The NSE server will return only the valid supported timeframes.
+
+    RETURNS:
+        JSON chart data containing:
+            - datetime_utc (string): Timestamp in UTC formatted as "%Y-%m-%d %H:%M:%S"
+            - price (float): stock price at that timestamp
+            - flag (string): Event marker provided by NSE (e.g., "PO"- Pre Open Market, "NM"- Normal Market, etc.) 
+
+    CATEGORY:
+        ChartData
+        (All market chart–related tools fall under this category.)
+    """
+    rate_limit()
+    return df_to_json(get.stock_chart(symbol, timeframe))
+
+
+@mcp.tool()
+def symbol_full_fno_live_data(symbol: str):
+    """
+    TOOL: symbol_full_fno_live_data
+    DESCRIPTION:
+        Fetches complete live FnO data for the specified stock or index.
+        Includes all available Futures & Options contracts, identifiers,
+        last traded price, volume, open interest, and other key market metrics.
+
+    PARAMETERS:
+        symbol: str – Example: "NIFTY", "BANKNIFTY", "RELIANCE"
+
+    RETURNS:
+        Dict containing full live FnO chain with identifiers for all
+        Futures and Options contracts.
+
+    CATEGORY:
+        symbol_fno_live_data
+    """
+    rate_limit()
+    return get.symbol_full_fno_live_data(symbol)
+
+
+@mcp.tool()
+def symbol_specific_most_active_Calls_or_Puts_or_Contracts_by_OI(symbol: str, type_mode: str):
+    """
+    TOOL: symbol_specific_most_active_Calls_or_Puts_or_Contracts_by_OI
+    DESCRIPTION:
+        Fetches the Most Active CALLS, PUTS, or CONTRACTS based on Open Interest
+        for a specific stock or index.
+
+    PARAMETERS:
+        symbol: str – Example: "NIFTY", "RELIANCE"
+        type_mode: str – Allowed:
+            "CALLS"      → Most Active Call Options by OI
+            "PUTS"       → Most Active Put Options by OI
+            "CONTRACTS"  → Most Active Combined Contracts by OI
+
+    RETURNS:
+        List / dict of the most active FnO contracts based on Open Interest.
+
+    CATEGORY:
+        symbol_fno_live_data
+    """
+    rate_limit()
+    return get.symbol_specific_most_active_Calls_or_Puts_or_Contracts_by_OI(symbol, type_mode)
+
+
+@mcp.tool()
+def identifier_based_fno_contracts_live_chart_data(identifier: str):
+    """
+    TOOL: identifier_based_fno_contracts_live_chart_data
+    DESCRIPTION:
+        Fetches intraday price chart data (timestamp, price, flag)
+        for a specific Futures or Options contract using its NSE identifier.
+
+    PARAMETERS:
+        identifier: str – Examples:
+            "OPTSTKTCS30-12-2025CE3300.00"
+            "FUTSTKTCS30-12-2025XX0.00"
+            "FUTIDXNIFTY30-12-2025XX0.00"
+            "OPTIDXNIFTY09-12-2025PE25800.00"
+
+        (To find valid identifiers, use:
+            symbol_full_fno_live_data
+            symbol_specific_most_active_Calls_or_Puts_or_Contracts_by_OI
+        )
+
+    RETURNS:
+        Intraday price chart data for the specific FnO contract.
+
+    CATEGORY:
+        symbol_fno_live_data
+    """
+    rate_limit()
+    return get.identifier_based_fno_contracts_live_chart_data(identifier)
+
+
+# # Run with streamable HTTP transport
 # if __name__ == "__main__":
-#     print("🔵 Starting NseKit-MCP server...")
-#     asyncio.run(mcp.run(transport="streamable-http"))
+#     mcp.run(transport="streamable-http")
 
 def main() -> None:
     mcp.run()
