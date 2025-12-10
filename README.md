@@ -2,7 +2,7 @@
 
 **NseKit-MCP** is a high-performance FastMCP (Model Context Protocol) server that exposes **100+ tools** for accessing live and historical data from the **National Stock Exchange of India (NSE)** using the powerful [NseKit](https://github.com/Prasad1612/NseKit) Python library.
 
-Perfect for AI agents (Claude, Grok, GPT, etc.), trading bots, backtesters, and research platforms.
+Perfect for AI agents (Claude, Grok, GPT, Gemini CLI etc.), trading bots, backtesters, and research platforms.
 
 ---
 
