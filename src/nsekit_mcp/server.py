@@ -1,8 +1,9 @@
 from mcp.server.fastmcp import FastMCP
 from NseKit import NseKit, Moneycontrol
 import pandas as pd
-import time                      
-from threading import Lock
+import time
+import json                      
+from threading import Lock 
 
 # ================================================================
 #                   RATE LIMIT CONTROL (NSE Safe)
@@ -46,9 +47,9 @@ def df_to_json(data):
 
 
 @mcp.tool()
-def market_status(mode: str = "Market Status"):
+def market_live_status(mode: str = "Market Status"):
     """
-    TOOL: market_status
+    TOOL: market_live_status
     DESCRIPTION:
         Get current market status, total mcap, live Nifty50, or Gift Nifty value.
     PARAMETERS:
@@ -62,9 +63,9 @@ def market_status(mode: str = "Market Status"):
     return df_to_json(get.nse_market_status(mode))
 
 @mcp.tool()
-def is_market_open(segment: str = "Capital Market"):
+def market_is_open(segment: str = "Capital Market"):
     """
-    TOOL: is_market_open
+    TOOL: market_is_open
     DESCRIPTION:
         Check if Capital Market, F&O, Currency, Commodity or Debt segment is open.
     PARAMETERS:
@@ -78,9 +79,9 @@ def is_market_open(segment: str = "Capital Market"):
     return get.nse_is_market_open(segment)
 
 @mcp.tool()
-def trading_holidays(list_only: bool = False):
+def market_trading_holidays_list(list_only: bool = False):
     """
-    TOOL: trading_holidays
+    TOOL: market_trading_holidays
     DESCRIPTION:
         Get all NSE trading holidays for current year.
     PARAMETERS:
@@ -94,9 +95,9 @@ def trading_holidays(list_only: bool = False):
     return df_to_json(get.nse_trading_holidays(list_only=list_only))
 
 @mcp.tool()
-def clearing_holidays(list_only: bool = False):
+def market_clearing_holidays_list(list_only: bool = False):
     """
-    TOOL: clearing_holidays
+    TOOL: market_clearing_holidays
     DESCRIPTION:
         Get all NSE clearing/settlement holidays.
     PARAMETERS:
@@ -110,9 +111,9 @@ def clearing_holidays(list_only: bool = False):
     return df_to_json(get.nse_clearing_holidays(list_only=list_only))
 
 @mcp.tool()
-def is_trading_holiday(date: str = None):
+def market_is_trading_holiday(date: str = None):
     """
-    TOOL: is_trading_holiday
+    TOOL: market_is_trading_holiday
     DESCRIPTION:
         Check if today or given date is trading holiday.
     PARAMETERS:
@@ -126,7 +127,7 @@ def is_trading_holiday(date: str = None):
     return get.is_nse_trading_holiday(date)
 
 @mcp.tool()
-def is_clearing_holiday(date: str = None):
+def market_is_clearing_holiday(date: str = None):
     """
     TOOL: is_clearing_holiday
     DESCRIPTION:
@@ -147,9 +148,9 @@ def is_clearing_holiday(date: str = None):
 # =====================================================================
 
 @mcp.tool()
-def live_market_turnover():
+def market_live_turnover():
     """
-    TOOL: live_market_turnover
+    TOOL: market_live_turnover
     DESCRIPTION:
         Real-time turnover across Equity, F&O, Currency, Commodity segments.
     RETURNS:
@@ -161,7 +162,7 @@ def live_market_turnover():
     return df_to_json(get.nse_live_market_turnover())
 
 @mcp.tool()
-def reference_rates():
+def currency_reference_rates():
     """
     TOOL: reference_rates
     DESCRIPTION:
@@ -189,9 +190,9 @@ def gift_nifty_live():
     return df_to_json(get.cm_live_gifty_nifty())
 
 @mcp.tool()
-def market_statistics():
+def market_live_statistics():
     """
-    TOOL: market_statistics
+    TOOL: market_live_statistics
     DESCRIPTION:
         Live capital market stats: Count of Advances, Declines, Unchanged, 52W High, 52W Low, Upper Circuit, Lower Circuit, Market Cap ₹ Lac Crs,
                                    Market Cap Tn $, Registered Investors (Raw), Registered Investors (Cr),
@@ -225,9 +226,9 @@ def preopen_index_summary(index_name: str = "NIFTY 50"):
     return df_to_json(get.pre_market_nifty_info(index_name))
 
 @mcp.tool()
-def preopen_all_adv_dec():
+def preopen_market_breadth():
     """
-    TOOL: preopen_all_adv_dec
+    TOOL: preopen_market_breadth
     DESCRIPTION:
         Full NSE pre-open advance/decline across all segments.
     RETURNS:
@@ -239,9 +240,9 @@ def preopen_all_adv_dec():
     return df_to_json(get.pre_market_all_nse_adv_dec_info())
 
 @mcp.tool()
-def preopen_stocks(category: str = "NIFTY 50"):
+def preopen_stocks_data(category: str = "NIFTY 50"):
     """
-    TOOL: preopen_stocks
+    TOOL: preopen_stocks_data
     DESCRIPTION:
         All stocks in pre-open with final price, change %.
     PARAMETERS:
@@ -255,9 +256,9 @@ def preopen_stocks(category: str = "NIFTY 50"):
     return df_to_json(get.pre_market_info(category))
 
 @mcp.tool()
-def all_indices_live():
+def indices_live_data():
     """
-    TOOL: all_indices_live
+    TOOL: indices_live_data
     DESCRIPTION:
         Live values(open, high, low, close(last),variation,percentChange,yearHigh,yearLow,pe,pb,dy,declines,advances,unchanged) of all 150+ NSE indices.
     RETURNS:
@@ -269,9 +270,9 @@ def all_indices_live():
     return df_to_json(get.index_live_all_indices_data())
 
 @mcp.tool()
-def index_constituents_live_stocks_data(index_name: str, list_only: bool = False):
+def index_live_constituents(index_name: str, list_only: bool = False):
     """
-    TOOL: index_constituents_live_stocks_data
+    TOOL: index_live_constituents
     DESCRIPTION:
         Get stocks in any NSE index with live or current data.
     PARAMETERS:
@@ -291,9 +292,9 @@ def index_constituents_live_stocks_data(index_name: str, list_only: bool = False
 # =====================================================================
 
 @mcp.tool()
-def nifty50_constituents(list_only: bool = False):
+def list_of_nifty50_stocks(list_only: bool = False):
     """
-    TOOL: nifty50_constituents
+    TOOL: list_of_nifty50_stocks
     DESCRIPTION:
         Latest Nifty 50 stocks with sector & weight.
     PARAMETERS:
@@ -304,12 +305,25 @@ def nifty50_constituents(list_only: bool = False):
         Index_Reference
     """
     rate_limit()
-    return df_to_json(get.nse_6m_nifty_50(list_only=list_only))
+
+    data = get.nse_6m_nifty_50(list_only=list_only)
+
+    # 🔹 Ensure pure JSON list when list_only=True
+    if list_only:
+        return {
+            "index": "NIFTY 50",
+            "count": len(data),
+            "symbols": list(data)
+        }
+
+    # 🔹 Full dataset → explicit JSON conversion
+    return df_to_json(data)
+
 
 @mcp.tool()
-def nifty500_constituents(list_only: bool = False):
+def list_of_nifty500_stocks(list_only: bool = False):
     """
-    TOOL: nifty500_constituents
+    TOOL: list_of_nifty500_stocks
     DESCRIPTION:
         Full Nifty 500 stock list.
     PARAMETERS:
@@ -320,12 +334,21 @@ def nifty500_constituents(list_only: bool = False):
         Index_Reference
     """
     rate_limit()
-    return df_to_json(get.nse_6m_nifty_500(list_only=list_only))
+    
+    data = get.nse_6m_nifty_500(list_only=list_only)
+
+    if list_only:
+        return {
+            "index": "NIFTY 500",
+            "count": len(data),
+            "symbols": list(data)
+        }
+    return df_to_json(data)
 
 @mcp.tool()
-def fno_list(mode: str = "stocks", list_only: bool = False):
+def list_of_fno_stocks(mode: str = "stocks", list_only: bool = False):
     """
-    TOOL: fno_list
+    TOOL: list_of_fno_stocks
     DESCRIPTION:
         All F&O eligible stocks or indices.
     PARAMETERS:
@@ -337,12 +360,20 @@ def fno_list(mode: str = "stocks", list_only: bool = False):
         FnO_Reference
     """
     rate_limit()
-    return df_to_json(get.nse_eom_fno_full_list(mode, list_only=list_only))
+    data = get.nse_eom_fno_full_list(mode=mode, list_only=list_only)
+
+    if list_only:
+        return {
+            "name": f"F&O {mode.upper()}",
+            "count": len(data),
+            "symbols": list(data)
+        }
+    return df_to_json(data)
 
 @mcp.tool()
-def equity_master(list_only: bool = False):
+def list_of_All_NSE_stocks(list_only: bool = False):
     """
-    TOOL: equity_master
+    TOOL: list_of_all_NSE_stocks
     DESCRIPTION:
         Complete list of all NSE listed equities.
     PARAMETERS:
@@ -353,7 +384,11 @@ def equity_master(list_only: bool = False):
         Equity_Reference
     """
     rate_limit()
-    return df_to_json(get.nse_eod_equity_full_list(list_only=list_only))
+    data = get.nse_eod_equity_full_list(list_only=list_only)
+
+    if list_only:
+        return json.dumps(list(data))
+    return df_to_json(data)
 
 
 # =====================================================================
@@ -361,9 +396,9 @@ def equity_master(list_only: bool = False):
 # =====================================================================
 
 @mcp.tool()
-def option_chain(symbol: str, expiry: str = None, compact: bool = False):
+def fno_live_option_chain(symbol: str, expiry: str = None, compact: bool = False):
     """
-    TOOL: option_chain
+    TOOL: fno_live_option_chain
     DESCRIPTION:
         Full live option chain with OI, volume, IV, PCR, Max Pain.
     PARAMETERS:
@@ -436,9 +471,9 @@ def most_active_options(contract_type: str = "Stock", option_type: str = "Call",
 # =====================================================================
 
 @mcp.tool()
-def stock_quote(symbol: str):
+def equity_live_stock_quote(symbol: str):
     """
-    TOOL: stock_quote
+    TOOL: equity_live_stock_quote
     DESCRIPTION:
         Full live quote: price, change, volume, VWAP, delivery, 5-level market depth, Sector, Industry, BasicIndustry, totalBuyQuantity, totalSellQuantity, UpperCircuit, LowerCircuit.
     PARAMETERS:
@@ -469,11 +504,11 @@ def most_active_equities(by: str = "value"):
     return df_to_json(func())
 
 @mcp.tool()
-def volume_spurts():
+def equity_volume_surge():
     """
-    TOOL: volume_spurts
+    TOOL: equity_volume_surge
     DESCRIPTION:
-        Stocks with sudden volume surge vs average.
+        Stocks with sudden volume surge or spurtsvs average.
     RETURNS:
         JSON list
     CATEGORY:
@@ -483,9 +518,9 @@ def volume_spurts():
     return df_to_json(get.cm_live_volume_spurts())
 
 @mcp.tool()
-def hit_52week_high():
+def equity_52week_high_live():
     """
-    TOOL: hit_52week_high
+    TOOL: equity_52week_high_live
     DESCRIPTION:
         live market stocks hitting 52-week high today.
     RETURNS:
@@ -497,9 +532,9 @@ def hit_52week_high():
     return df_to_json(get.cm_live_52week_high())
 
 @mcp.tool()
-def hit_52week_low():
+def equity_52week_low_live():
     """
-    TOOL: hit_52week_low
+    TOOL: equity_52week_low_live
     DESCRIPTION:
         live market stocks hitting 52-week low today.
     RETURNS:
@@ -516,9 +551,9 @@ def hit_52week_low():
 # =====================================================================
 
 @mcp.tool()
-def insider_trading(symbol: str = None, period: str = None, start_date: str = None, end_date: str = None):
+def corporate_insider_trading(symbol: str = None, period: str = None, start_date: str = None, end_date: str = None):
     """
-    TOOL: insider_trading
+    TOOL: corporate_insider_trading
     DESCRIPTION:
         Latest insider buying/selling (SAST).
     PARAMETERS:
@@ -551,9 +586,9 @@ def corporate_actions(symbol: str = None, period: str = None, start_date: str = 
     return df_to_json(get.cm_live_hist_corporate_action(symbol, period, start_date, end_date, purpose))
 
 @mcp.tool()
-def board_meetings(symbol: str = None, start_date: str = None, end_date: str = None):
+def corporate_board_meetings(symbol: str = None, start_date: str = None, end_date: str = None):
     """
-    TOOL: board_meetings
+    TOOL: corporate_board_meetings
     DESCRIPTION:
         Upcoming & past board meetings.
     RETURNS:
@@ -570,9 +605,9 @@ def board_meetings(symbol: str = None, start_date: str = None, end_date: str = N
 # =====================================================================
 
 @mcp.tool()
-def current_ipos():
+def ipo_current_list():
     """
-    TOOL: current_ipos
+    TOOL: ipo_current_list
     DESCRIPTION:
         All open Mainboard & SME IPOs with subscription status.
     RETURNS:
@@ -598,9 +633,9 @@ def ipo_preopen_today():
     return df_to_json(get.ipo_preopen())
 
 @mcp.tool()
-def ipo_tracker(board: str = "Mainboard"):
+def ipo_performance_tracker(board: str = "Mainboard"):
     """
-    TOOL: ipo_tracker
+    TOOL: ipo_performance_tracker
     DESCRIPTION:
         YTD IPO listing performance & gains.
     PARAMETERS:
@@ -619,9 +654,9 @@ def ipo_tracker(board: str = "Mainboard"):
 # =====================================================================
 
 @mcp.tool()
-def index_history(index: str, period: str = None, from_date: str = None, to_date: str = None):
+def index_price_history(index: str, period: str = None, from_date: str = None, to_date: str = None):
     """
-    TOOL: index_history
+    TOOL: index_price_history
     DESCRIPTION:
         Fetch historical OHLC + turnover for any index.
     PARAMETERS:
@@ -634,9 +669,9 @@ def index_history(index: str, period: str = None, from_date: str = None, to_date
     CATEGORY:
         Historical
     EXAMPLES:
-        index_history("NIFTY 50", period="1Y")
-        index_history("NIFTY 50", from_date="01-01-2025")
-        index_history("NIFTY BANK", from_date="01-01-2025", to_date="17-10-2025")
+        index_price_history("NIFTY 50", period="1Y")
+        index_price_history("NIFTY 50", from_date="01-01-2025")
+        index_price_history("NIFTY BANK", from_date="01-01-2025", to_date="17-10-2025")
     """
     
     rate_limit()
@@ -644,9 +679,9 @@ def index_history(index: str, period: str = None, from_date: str = None, to_date
 
 
 @mcp.tool()
-def stock_history(symbol: str, period: str = None, from_date: str = None, to_date: str = None):
+def equity_price_history(symbol: str, period: str = None, from_date: str = None, to_date: str = None):
     """
-    TOOL: stock_history
+    TOOL: equity_price_history
     DESCRIPTION:
         Fetch historical price OHLC + turnover + delivery data for any stock.
     PARAMETERS:
@@ -673,9 +708,9 @@ def stock_history(symbol: str, period: str = None, from_date: str = None, to_dat
 # =====================================================================
 
 @mcp.tool()
-def nse_live_hist_circulars(from_date: str = None, to_date: str = None, department: str = None):
+def nse_circulars(from_date: str = None, to_date: str = None, department: str = None):
     """
-    TOOL: nse_live_hist_circulars
+    TOOL: nse_circulars
     DESCRIPTION:
         Historical NSE circulars (default: yesterday → today)
     PARAMETERS:
@@ -693,9 +728,9 @@ def nse_live_hist_circulars(from_date: str = None, to_date: str = None, departme
 
 
 @mcp.tool()
-def nse_live_hist_press_releases(from_date: str = None, to_date: str = None, department: str = None):
+def nse_press_releases(from_date: str = None, to_date: str = None, department: str = None):
     """
-    TOOL: nse_live_hist_press_releases
+    TOOL: nse_press_releases
     DESCRIPTION:
         Historical NSE press releases
     PARAMETERS:
@@ -717,9 +752,9 @@ def nse_live_hist_press_releases(from_date: str = None, to_date: str = None, dep
 # =====================================================================
 
 @mcp.tool()
-def index_live_nifty_50_returns():
+def nifty50_past_returns():
     """
-    TOOL: index_live_nifty_50_returns
+    TOOL: nifty50_past_returns
     DESCRIPTION:
         Nifty 50 returns summary (1W to 5Y)
     PARAMETERS: None
@@ -734,9 +769,9 @@ def index_live_nifty_50_returns():
 
 
 @mcp.tool()
-def index_live_nifty_50_contribution():
+def nifty50_live_contribution():
     """
-    TOOL: index_live_nifty_50_contribution
+    TOOL: nifty50_live_contribution
     DESCRIPTION:
         Stock-wise contribution to Nifty 50 index movement
     PARAMETERS: None
@@ -755,9 +790,9 @@ def index_live_nifty_50_contribution():
 # =====================================================================
 
 @mcp.tool()
-def index_eod_bhav_copy(date: str):
+def index_eod_bhavcopy(date: str):
     """
-    TOOL: index_eod_bhav_copy
+    TOOL: index_eod_bhavcopy
     DESCRIPTION:
         All indices EOD bhavcopy for a specific date
     PARAMETERS:
@@ -793,9 +828,9 @@ def index_pe_pb_div_historical_data(index: str, period: str = None, from_date: s
 
 
 @mcp.tool()
-def india_vix_historical_data(period: str = None, from_date: str = None, to_date: str = None):
+def india_vix(period: str = None, from_date: str = None, to_date: str = None):
     """
-    TOOL: india_vix_historical_data
+    TOOL: india_vix
     DESCRIPTION:
         Historical India VIX data
     PARAMETERS:
@@ -816,9 +851,9 @@ def india_vix_historical_data(period: str = None, from_date: str = None, to_date
 # =====================================================================
 
 @mcp.tool()
-def cm_live_equity_info(symbol: str):
+def equity_live_stock_info(symbol: str):
     """
-    TOOL: cm_live_equity_info
+    TOOL: equity_live_stock_info
     DESCRIPTION:
         Live equity master info (face value, ISIN, sector etc.)
     PARAMETERS:
@@ -834,9 +869,9 @@ def cm_live_equity_info(symbol: str):
 
 
 @mcp.tool()
-def cm_live_block_deal():
+def equity_block_deals_live():
     """
-    TOOL: cm_live_block_deal
+    TOOL: equity_block_deals_live
     DESCRIPTION:
         Latest block deals (live)
     PARAMETERS: None
@@ -851,9 +886,9 @@ def cm_live_block_deal():
 
 
 @mcp.tool()
-def cm_live_hist_corporate_announcement(symbol: str = None, from_date: str = None, to_date: str = None):
+def corporate_announcement(symbol: str = None, from_date: str = None, to_date: str = None):
     """
-    TOOL: cm_live_hist_corporate_announcement
+    TOOL: corporate_announcement
     DESCRIPTION:
         Corporate announcements (all or symbol-specific)
     PARAMETERS:
@@ -871,9 +906,9 @@ def cm_live_hist_corporate_announcement(symbol: str = None, from_date: str = Non
 
 
 @mcp.tool()
-def cm_live_today_event_calendar(date_from: str = None, date_to: str = None):
+def corporate_today_event_calendar(date_from: str = None, date_to: str = None):
     """
-    TOOL: cm_live_today_event_calendar
+    TOOL: corporate_today_event_calendar
     DESCRIPTION:
         Today's or date-range corporate events (AGM, results etc.)
     PARAMETERS:
@@ -890,9 +925,9 @@ def cm_live_today_event_calendar(date_from: str = None, date_to: str = None):
 
 
 @mcp.tool()
-def cm_live_upcoming_event_calendar():
+def corporate_upcoming_event_calendar():
     """
-    TOOL: cm_live_upcoming_event_calendar
+    TOOL: corporate_upcoming_event_calendar
     DESCRIPTION:
         Upcoming corporate events
     PARAMETERS: None
@@ -906,9 +941,9 @@ def cm_live_upcoming_event_calendar():
 
 
 @mcp.tool()
-def cm_live_hist_shareholder_meetings(symbol: str = None, from_date: str = None, to_date: str = None):
+def corporate_shareholder_meetings(symbol: str = None, from_date: str = None, to_date: str = None):
     """
-    TOOL: cm_live_hist_shareholder_meetings
+    TOOL: corporate_shareholder_meetings
     DESCRIPTION:
         Shareholder meetings (AGM/EGM) history
     PARAMETERS:
@@ -925,11 +960,11 @@ def cm_live_hist_shareholder_meetings(symbol: str = None, from_date: str = None,
 
 
 @mcp.tool()
-def cm_live_hist_qualified_institutional_placement(stage: str = None, period_or_symbol: str = None, from_date: str = None, to_date: str = None):
+def equity_QIP_history(stage: str = None, period_or_symbol: str = None, from_date: str = None, to_date: str = None):
     """
-    TOOL: cm_live_hist_qualified_institutional_placement
+    TOOL: equity_QIP_history
     DESCRIPTION:
-        QIP data by stage, period, symbol
+       Qualified Institutional Placement (QIP) data by stage, period, symbol
     PARAMETERS:
         stage: str – "In-Principle" or "Listing Stage"
         period_or_symbol: str – "1Y", "RELIANCE" etc.
@@ -945,9 +980,9 @@ def cm_live_hist_qualified_institutional_placement(stage: str = None, period_or_
 
 
 @mcp.tool()
-def cm_live_hist_preferential_issue(stage: str = None, period_or_symbol: str = None, from_date: str = None, to_date: str = None):
+def equity_preferential_issues(stage: str = None, period_or_symbol: str = None, from_date: str = None, to_date: str = None):
     """
-    TOOL: cm_live_hist_preferential_issue
+    TOOL: equity_preferential_issues
     DESCRIPTION:
         Preferential issue data
     PARAMETERS:
@@ -965,9 +1000,9 @@ def cm_live_hist_preferential_issue(stage: str = None, period_or_symbol: str = N
 
 
 @mcp.tool()
-def cm_live_hist_right_issue(stage: str = None, period_or_symbol: str = None, from_date: str = None, to_date: str = None):
+def equity_rights_issues(stage: str = None, period_or_symbol: str = None, from_date: str = None, to_date: str = None):
     """
-    TOOL: cm_live_hist_right_issue
+    TOOL: equity_rights_issues
     DESCRIPTION:
         Rights issue data
     PARAMETERS:
@@ -985,9 +1020,9 @@ def cm_live_hist_right_issue(stage: str = None, period_or_symbol: str = None, fr
 
 
 @mcp.tool()
-def cm_live_voting_results():
+def corporate_voting_results():
     """
-    TOOL: cm_live_voting_results
+    TOOL: corporate_voting_results
     DESCRIPTION:
         Latest voting results
     PARAMETERS: None
@@ -1001,9 +1036,9 @@ def cm_live_voting_results():
 
 
 @mcp.tool()
-def cm_live_qtly_shareholding_patterns():
+def corporate_qtly_shareholding_patterns():
     """
-    TOOL: cm_live_qtly_shareholding_patterns
+    TOOL: corporate_qtly_shareholding_patterns
     DESCRIPTION:
         Latest quarterly shareholding patterns
     PARAMETERS: None
@@ -1017,9 +1052,9 @@ def cm_live_qtly_shareholding_patterns():
 
 
 @mcp.tool()
-def cm_live_hist_annual_reports(symbol: str = None, from_date: str = None, to_date: str = None):
+def corporate_annual_reports(symbol: str = None, from_date: str = None, to_date: str = None):
     """
-    TOOL: cm_live_hist_annual_reports
+    TOOL: corporate_annual_reports
     DESCRIPTION:
         Annual reports (all or symbol-specific)
     PARAMETERS:
@@ -1193,9 +1228,9 @@ def fii_dii_activity(exchange: str = None):
 
 
 @mcp.tool()
-def market_activity_report(date: str):
+def market_eod_activity_report(date: str):
     """
-    TOOL: market_activity_report
+    TOOL: market_eod_activity_report
     DESCRIPTION:
         Daily market turnover, advances/declines, top gainers/losers.
     PARAMETERS:
@@ -1210,9 +1245,9 @@ def market_activity_report(date: str):
     return df_to_json(get.cm_eod_market_activity_report(date))
 
 @mcp.tool()
-def bhavcopy_with_delivery(date: str):
+def equity_eod_bhavcopy_delivery(date: str):
     """
-    TOOL: bhavcopy_with_delivery
+    TOOL: equity_eod_bhavcopy_delivery
     DESCRIPTION:
         Full NSE equity bhavcopy including delivery percentage & value.
     PARAMETERS:
@@ -1228,9 +1263,9 @@ def bhavcopy_with_delivery(date: str):
 
 
 @mcp.tool()
-def equity_bhavcopy(date: str):
+def equity_eod_bhavcopy(date: str):
     """
-    TOOL: equity_bhavcopy
+    TOOL: equity_eod_bhavcopy
     DESCRIPTION:
         Standard equity closing prices, volume, trades (without delivery).
     PARAMETERS:
@@ -1246,9 +1281,9 @@ def equity_bhavcopy(date: str):
 
 
 @mcp.tool()
-def week_52_high_low(date: str):
+def equity_52week_high_low_eod(date: str):
     """
-    TOOL: week_52_high_low
+    TOOL: equity_52week_high_low_eod
     DESCRIPTION:
         Stocks hitting 52-week high or low on given date.
     PARAMETERS:
@@ -1264,9 +1299,9 @@ def week_52_high_low(date: str):
 
 
 @mcp.tool()
-def bulk_deals_EOD():
+def equity_bulk_deals_eod():
     """
-    TOOL: bulk_deals_EOD
+    TOOL: equity_bulk_deals_eod
     DESCRIPTION:
         End of day based bulk deals across NSE/BSE (client-level).
     PARAMETERS: None
@@ -1281,9 +1316,9 @@ def bulk_deals_EOD():
 
 
 @mcp.tool()
-def block_deals_EOD():
+def equity_block_deals_eod():
     """
-    TOOL: block_deals_EOD
+    TOOL: equity_block_deals_eod
     DESCRIPTION:
         End of day based block deals (large negotiated trades).
     PARAMETERS: None
@@ -1298,9 +1333,9 @@ def block_deals_EOD():
 
 
 @mcp.tool()
-def short_selling(date: str):
+def equity_short_selling(date: str):
     """
-    TOOL: short_selling
+    TOOL: equity_short_selling
     DESCRIPTION:
         Stocks disclosed for short selling on a given date if user no date given last trading date is used.
     PARAMETERS:
@@ -1334,9 +1369,9 @@ def surveillance_indicator(date: str):
 
 
 @mcp.tool()
-def series_change_latest():
+def equity_series_changes():
     """
-    TOOL: series_change_latest
+    TOOL: equity_series_changes
     DESCRIPTION:
         Recent changes in trading series (EQ → BE, BE → BZ etc.).
     PARAMETERS: None
@@ -1351,9 +1386,9 @@ def series_change_latest():
 
 
 @mcp.tool()
-def equity_band_changes(date: str):
+def equity_price_band_changes(date: str):
     """
-    TOOL: equity_band_changes
+    TOOL: equity_price_band_changes
     DESCRIPTION:
         Stocks moved to/from price bands (2%, 5%, 10%, 20%).
     PARAMETERS:
@@ -1369,9 +1404,9 @@ def equity_band_changes(date: str):
 
 
 @mcp.tool()
-def equity_price_bands_eod(date: str):
+def equity_price_bands(date: str):
     """
-    TOOL: equity_price_bands_eod
+    TOOL: equity_price_bands
     DESCRIPTION:
         Applicable price bands for all stocks on a given EOD.
     PARAMETERS:
@@ -1387,9 +1422,9 @@ def equity_price_bands_eod(date: str):
 
 
 @mcp.tool()
-def equity_price_bands_historical(symbol: str = None, period: str = None, from_date: str = None, to_date: str = None):
+def equity_price_band_history(symbol: str = None, period: str = None, from_date: str = None, to_date: str = None):
     """
-    TOOL: equity_price_bands_historical
+    TOOL: equity_price_band_history
     DESCRIPTION:
         Historical price band changes for a stock or all stocks.
     PARAMETERS:
@@ -1413,9 +1448,9 @@ def equity_price_bands_historical(symbol: str = None, period: str = None, from_d
 
 
 @mcp.tool()
-def pe_ratio(date: str):
+def equity_pe_ratio(date: str):
     """
-    TOOL: pe_ratio
+    TOOL: equity_pe_ratio
     DESCRIPTION:
         PE, PB, Dividend Yield for all listed companies.
     PARAMETERS:
@@ -1449,9 +1484,9 @@ def market_cap(date: str):
 
 
 @mcp.tool()
-def equity_name_change_latest():
+def equity_name_changes():
     """
-    TOOL: equity_name_change_latest
+    TOOL: equity_name_changes
     DESCRIPTION:
         Recent corporate name changes.
     PARAMETERS: None
@@ -1466,9 +1501,9 @@ def equity_name_change_latest():
 
 
 @mcp.tool()
-def equity_symbol_change_latest():
+def equity_symbol_changes():
     """
-    TOOL: equity_symbol_change_latest
+    TOOL: equity_symbol_changes
     DESCRIPTION:
         Recent symbol changes (e.g., INFY → INFY).
     PARAMETERS: None
@@ -1483,9 +1518,9 @@ def equity_symbol_change_latest():
 
 
 @mcp.tool()
-def historical_bulk_deals(symbol: str = None, period: str = None, from_date: str = None, to_date: str = None):
+def equity_bulk_deals_history(symbol: str = None, period: str = None, from_date: str = None, to_date: str = None):
     """
-    TOOL: historical_bulk_deals
+    TOOL: equity_bulk_deals_history
     DESCRIPTION:
         Bulk deals history – by symbol, date range or period.
     PARAMETERS:
@@ -1503,9 +1538,9 @@ def historical_bulk_deals(symbol: str = None, period: str = None, from_date: str
 
 
 @mcp.tool()
-def historical_block_deals(symbol: str = None, period: str = None, from_date: str = None, to_date: str = None):
+def equity_block_deals_history(symbol: str = None, period: str = None, from_date: str = None, to_date: str = None):
     """
-    TOOL: historical_block_deals
+    TOOL: equity_block_deals_history
     DESCRIPTION:
         Block deals history – by symbol or date range.
     PARAMETERS:
@@ -1522,9 +1557,9 @@ def historical_block_deals(symbol: str = None, period: str = None, from_date: st
 
 
 @mcp.tool()
-def historical_short_selling(symbol: str = None, period: str = None, from_date: str = None, to_date: str = None):
+def equity_short_selling_history(symbol: str = None, period: str = None, from_date: str = None, to_date: str = None):
     """
-    TOOL: historical_short_selling
+    TOOL: equity_short_selling_history
     DESCRIPTION:
         Historical short selling disclosures.
     PARAMETERS:
@@ -1541,9 +1576,9 @@ def historical_short_selling(symbol: str = None, period: str = None, from_date: 
 
 
 @mcp.tool()
-def business_growth(mode: str = "daily", month: str = None, year: int = None):
+def equity_market_business_growth(mode: str = "daily", month: str = None, year: int = None):
     """
-    TOOL: business_growth
+    TOOL: equity_market_business_growth
     DESCRIPTION:
         NSE daily/monthly/yearly business growth (cash segment).
     PARAMETERS:
@@ -1561,15 +1596,15 @@ def business_growth(mode: str = "daily", month: str = None, year: int = None):
 
 
 @mcp.tool()
-def monthly_settlement_report(period: str = None, from_year: int = None, to_year: int = None):
+def equity_market_monthly_settlement(period: str = None, from_year = None, to_year = None):
     """
-    TOOL: monthly_settlement_report
+    TOOL: equity_market_monthly_settlement
     DESCRIPTION:
         Fetch NSE Monthly Settlement Statistics (Cash Market) for multiple financial years (Apr–Mar),
         including past financial years and current FY up to the latest available month.
     PARAMETERS:
         period: str – "1Y", "3Y" or None (current FY)
-        from_year/to_year: int – e.g., 2024, 2026
+        from_year/to_year: int – e.g., 2024, 2026   (optional)
     RETURNS:
         Settlement stats
     CATEGORY:
@@ -1598,9 +1633,9 @@ def monthly_most_active_equity():
 
 
 @mcp.tool()
-def advances_declines(mode: str = "Month_wise", month: str = None, year: int = None):
+def market_advances_declines(mode: str = "Month_wise", month: str = None, year: int = None):
     """
-    TOOL: advances_declines
+    TOOL: market_advances_declines
     DESCRIPTION:
         Historical advances vs declines (daily or monthly).
     PARAMETERS:
@@ -1640,9 +1675,9 @@ def fno_bhavcopy(date: str):
 
 
 @mcp.tool()
-def fii_stats_fno(date: str):
+def fno_fii_stats(date: str):
     """
-    TOOL: fii_stats_fno
+    TOOL: fno_fii_stats
     DESCRIPTION:
         FII activity in F&O segment (Index/Stock, Long/Short).
     PARAMETERS:
@@ -1658,9 +1693,9 @@ def fii_stats_fno(date: str):
 
 
 @mcp.tool()
-def top10_futures(date: str):
+def fno_eod_top10_futures(date: str):
     """
-    TOOL: top10_futures
+    TOOL: fno_eod_top10_futures
     DESCRIPTION:
         Top 10 most active futures contracts by volume/OI.
     PARAMETERS:
@@ -1676,9 +1711,9 @@ def top10_futures(date: str):
 
 
 @mcp.tool()
-def top20_options(date: str):
+def fno_eod_top20_options(date: str):
     """
-    TOOL: top20_options
+    TOOL: fno_eod_top20_options
     DESCRIPTION:
         Top 20 most active options contracts.
     PARAMETERS:
@@ -1694,9 +1729,9 @@ def top20_options(date: str):
 
 
 @mcp.tool()
-def security_ban_list(date: str):
+def fno_ban_list(date: str):
     """
-    TOOL: security_ban_list
+    TOOL: fno_ban_list
     DESCRIPTION:
         Stocks under F&O ban period.
     PARAMETERS:
@@ -1712,9 +1747,9 @@ def security_ban_list(date: str):
 
 
 @mcp.tool()
-def mwpl_data(date: str):
+def fno_mwpl_data(date: str):
     """
-    TOOL: mwpl_data
+    TOOL: fno_mwpl_data
     DESCRIPTION:
         Market Wide Position Limits (MWPL) and usage %.
     PARAMETERS:
@@ -1730,9 +1765,9 @@ def mwpl_data(date: str):
 
 
 @mcp.tool()
-def combined_oi(date: str):
+def fno_combined_oi(date: str):
     """
-    TOOL: combined_oi
+    TOOL: fno_combined_oi
     DESCRIPTION:
         Combined futures & options open interest.
     PARAMETERS:
@@ -1748,9 +1783,9 @@ def combined_oi(date: str):
 
 
 @mcp.tool()
-def participant_oi(date: str):
+def fno_participant_wise_oi(date: str):
     """
-    TOOL: participant_oi
+    TOOL: fno_participant_wise_oi
     DESCRIPTION:
         FII, DII, Pro, Client wise open interest.
     PARAMETERS:
@@ -1766,11 +1801,11 @@ def participant_oi(date: str):
 
 
 @mcp.tool()
-def participant_volume(date: str):
+def fno_participant_wise_volume(date: str):
     """
-    TOOL: participant_volume
+    TOOL: fno_participant_wise_volume
     DESCRIPTION:
-        Participant-wise trading volume in F&O.
+        FII, DII, Pro, Client wise trading volume in F&O.
     PARAMETERS:
         date: str – "DD-MM-YYYY"    if user no date given last trading date is used.
     RETURNS:
@@ -1784,9 +1819,9 @@ def participant_volume(date: str):
 
 
 @mcp.tool()
-def future_historical(symbol: str, type_: str, expiry: str = None, from_date: str = None, to_date: str = None, period: str = None):
+def futures_price_history(symbol: str, type_: str, expiry: str = None, from_date: str = None, to_date: str = None, period: str = None):
     """
-    TOOL: future_historical
+    TOOL: futures_price_history
     DESCRIPTION:
         Historical futures price, volume, OI.
     PARAMETERS:
@@ -1806,9 +1841,9 @@ def future_historical(symbol: str, type_: str, expiry: str = None, from_date: st
 
 
 @mcp.tool()
-def option_historical(symbol: str, type_: str, strike: str = None, from_date: str = None, to_date: str = None, expiry: str = None, period: str = None):
+def options_price_history(symbol: str, type_: str, strike: str = None, from_date: str = None, to_date: str = None, expiry: str = None, period: str = None):
     """
-    TOOL: option_historical
+    TOOL: options_price_history
     DESCRIPTION:
         Historical options price, volume, OI, IV.
     PARAMETERS:
@@ -1828,9 +1863,9 @@ def option_historical(symbol: str, type_: str, strike: str = None, from_date: st
 
 
 @mcp.tool()
-def fno_lot_size(symbol: str = None):
+def fno_lot_sizes(symbol: str = None):
     """
-    TOOL: fno_lot_size
+    TOOL: fno_lot_sizes
     DESCRIPTION:
         Current F&O lot sizes (all or specific symbol).
     PARAMETERS:
@@ -1926,9 +1961,9 @@ def sebi_data_pages(page: int = 1):
 
 
 @mcp.tool()
-def nifty_chart(timeframe: str = "1D"):
+def price_chart_nifty(timeframe: str = "1D"):
     """
-    TOOL: nifty_chart
+    TOOL: price_chart_nifty
 
     DESCRIPTION:
         Retrieves intraday or historical price chart data for the NIFTY 50 index 
@@ -1963,9 +1998,9 @@ def nifty_chart(timeframe: str = "1D"):
 
 
 @mcp.tool()
-def stock_chart(symbol: str, timeframe: str = "1D"):
+def price_chart_stock(symbol: str, timeframe: str = "1D"):
     """
-    TOOL: stock_chart
+    TOOL: price_chart_stock
 
     DESCRIPTION:
         Retrieves intraday or historical price chart data for the stock 
@@ -2047,9 +2082,9 @@ def symbol_specific_most_active_Calls_or_Puts_or_Contracts_by_OI(symbol: str, ty
 
 
 @mcp.tool()
-def identifier_based_fno_contracts_live_chart_data(identifier: str):
+def price_chart_fno_contracts(identifier: str):
     """
-    TOOL: identifier_based_fno_contracts_live_chart_data
+    TOOL: price_chart_fno_contracts
     DESCRIPTION:
         Fetches intraday price chart data (timestamp, price, flag)
         for a specific Futures or Options contract using its NSE identifier.
@@ -2075,6 +2110,26 @@ def identifier_based_fno_contracts_live_chart_data(identifier: str):
     rate_limit()
     return get.identifier_based_fno_contracts_live_chart_data(identifier)
 
+
+@mcp.tool()
+def investors_statewise():
+    """
+    TOOL: investors_statewise
+    DESCRIPTION:
+        Fetches NSE Registered Investors by State.(AS ON DATE, PREVIOUS CALENDAR DAY, PREVIOUS MONTH, PREVIOUS QUARTER, LAST YEAR, LAST 5 YEARS)
+    PARAMETERS:
+        None
+    RETURNS:
+        Registered Investors by State.
+    CATEGORY:
+        registered_investors
+    """
+    rate_limit()
+    return get.state_wise_registered_investors()
+
+# =====================================================================
+# START SERVER
+# =====================================================================
 
 # # Run with streamable HTTP transport
 # if __name__ == "__main__":
