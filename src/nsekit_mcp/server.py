@@ -51,9 +51,9 @@ def market_live_status(mode: str = "Market Status"):
     """
     TOOL: market_live_status
     DESCRIPTION:
-        Get current market status, total mcap, live Nifty50, or Gift Nifty value.
+        Get current market status("Capital Market" | "Currency" | "Commodity" | "Debt" | "currencyfuture"), Nifty50, total mcap, or Gift Nifty value.
     PARAMETERS:
-        mode: str – "Market Status" | "Mcap" | "Nifty50" | "Gift Nifty"
+        mode: str – "Market Status"| "Nifty50" | "Mcap" | "Gift Nifty"
     RETURNS:
         JSON with live market metrics
     CATEGORY:
@@ -67,7 +67,7 @@ def market_is_open(segment: str = "Capital Market"):
     """
     TOOL: market_is_open
     DESCRIPTION:
-        Check if Capital Market, F&O, Currency, Commodity or Debt segment is open.
+        Check if Capital Market, Currency, Commodity or Debt segment is open.
     PARAMETERS:
         segment: str – "Capital Market" | "Currency" | "Commodity" | "Debt" | "currencyfuture"
     RETURNS:
@@ -256,11 +256,26 @@ def preopen_stocks_data(category: str = "NIFTY 50"):
     return df_to_json(get.pre_market_info(category))
 
 @mcp.tool()
+def list_of_indices():
+    """
+    TOOL: list_of_indices
+    DESCRIPTION:
+        All 150+ NSE indices. ("Indices Eligible In Derivatives", "Broad Market Indices", "Sectoral Market Indices", "Thematic Market Indices", "Strategy Market Indices", "Others")
+    RETURNS:
+        JSON list of indices
+    CATEGORY:
+        Index_Reference
+    """
+    rate_limit()
+    return get.list_of_indices()
+
+@mcp.tool()
 def indices_live_data():
     """
     TOOL: indices_live_data
     DESCRIPTION:
         Live values(open, high, low, close(last),variation,percentChange,yearHigh,yearLow,pe,pb,dy,declines,advances,unchanged) of all 150+ NSE indices.
+        NSE indices performance analysis best tool (highly recommended).
     RETURNS:
         JSON list
     CATEGORY:
@@ -274,9 +289,30 @@ def index_live_constituents(index_name: str, list_only: bool = False):
     """
     TOOL: index_live_constituents
     DESCRIPTION:
-        Get stocks in any NSE index with live or current data.
+        Get stocks in any NSE index with live or current data. ("symbol", "previousClose", "open", "dayHigh", "dayLow", "lastPrice",  "change", "pChange", "totalTradedVolume", "totalTradedValue",  "nearWKH", "nearWKL", "perChange30d", "perChange365d", "ffmc")
+        NSE index stocks performance analysis best tool (highly recommended).
+        if user ask Nifty 50 or F&O stocks under 500rs best stock (use this tool highly recommended)
     PARAMETERS:
-        index_name: str – e.g. "NIFTY 50", "NIFTY IT"
+        index_name: str – e.g. "NIFTY 50", "SECURITIES IN F&O"(F&O stocks)
+            "NIFTY AUTO", 
+            "NIFTY CHEMICALS",
+            "NIFTY CONSUMER DURABLES",
+            "NIFTY FINANCIAL SERVICES EX-BANK",
+            "NIFTY FINANCIAL SERVICES 25/50",
+            "NIFTY FMCG",
+            "NIFTY HEALTHCARE INDEX",
+            "NIFTY IT",
+            "NIFTY MEDIA",
+            "NIFTY METAL",
+            "NIFTY MIDSMALL HEALTHCARE",
+            "NIFTY MIDSMALL FINANCIAL SERVICES",
+            "NIFTY MIDSMALL IT & TELECOM",
+            "NIFTY OIL & GAS",
+            "NIFTY PHARMA",
+            "NIFTY PSU BANK",
+            "NIFTY PRIVATE BANK",
+            "NIFTY REALTY",
+            "NIFTY500 HEALTHCARE"  (for more index_name use list_of_indices() tool)
         list_only: bool – Return only symbols if True, otherwise full data
     RETURNS:
         JSON constituents
@@ -769,20 +805,22 @@ def nifty50_past_returns():
 
 
 @mcp.tool()
-def nifty50_live_contribution():
+def index_live_contribution(Index: str = None, Mode: str = None):
     """
-    TOOL: nifty50_live_contribution
+    TOOL: index_live_contribution
     DESCRIPTION:
-        Stock-wise contribution to Nifty 50 index movement
-    PARAMETERS: None
+        Stock-wise how many points(changePoints) contribution to NIFTY 50 or Given index movement
+    PARAMETERS:
+        Index: str   – "NIFTY 50", "NIFTY BANK","NIFTY IT" etc.
+        Mode: str    – "First Five" for (Index Movers 5 Upward/Downward stocks) | 
+                        "Full" for (All index stocks)
     RETURNS:
         Contribution data
     CATEGORY:
         Index_Live
     """
     rate_limit()
-    # Original: get.index_live_nifty_50_contribution()
-    return df_to_json(get.index_live_nifty_50_contribution())
+    return df_to_json(get.index_live_contribution(Index, Mode))
 
 
 # =====================================================================
@@ -796,7 +834,7 @@ def index_eod_bhavcopy(date: str):
     DESCRIPTION:
         All indices EOD bhavcopy for a specific date
     PARAMETERS:
-        date: str – "DD-MM-YYYY"
+        date: str – "DD-MM-YYYY" (Note: if user no date given, last trading date is used. if date given, used user date.)
     RETURNS:
         Full index bhavcopy DataFrame
     CATEGORY:
@@ -1215,15 +1253,17 @@ def fii_dii_activity(exchange: str = None):
     DESCRIPTION:
         Latest FII/DII net buying/selling activity.
     PARAMETERS:
-        exchange: str – "Nse" NSE only FII/DII net buying/selling activity.
+        exchange: str – None All exchange(NSE + BSE) FII/DII net buying/selling activity.
+                        "Nse" NSE only FII/DII net buying/selling activity. (Not recommended, until user ask specific mention NSE only then use)
     RETURNS:
         FII/DII cash segment activity
     CATEGORY:
         Equity_EOD
+    EXAMPLES:
+        fii_dii_activity()              # All exchange(NSE + BSE) 
+        fii_dii_activity("Nse")         # NSE only
     """
     rate_limit()
-    # Original: get.cm_eod_fii_dii_activity()
-    # Original: get.cm_eod_fii_dii_activity("Nse") 
     return df_to_json(get.cm_eod_fii_dii_activity(exchange))
 
 
@@ -1234,7 +1274,7 @@ def market_eod_activity_report(date: str):
     DESCRIPTION:
         Daily market turnover, advances/declines, top gainers/losers.
     PARAMETERS:
-        date: str – Trade date in "DD-MM-YY"
+        date: str – Trade date in "DD-MM-YY"    (Note: if user no date given, last trading date is used. if date given, used user date.)
     RETURNS:
         Full market activity report
     CATEGORY:
@@ -1251,7 +1291,7 @@ def equity_eod_bhavcopy_delivery(date: str):
     DESCRIPTION:
         Full NSE equity bhavcopy including delivery percentage & value.
     PARAMETERS:
-        date: str – "DD-MM-YYYY"
+        date: str – "DD-MM-YYYY"    (Note: if user no date given, last trading date is used. if date given, used user date.)
     RETURNS:
         Complete bhavcopy with delivery data
     CATEGORY:
@@ -1269,7 +1309,7 @@ def equity_eod_bhavcopy(date: str):
     DESCRIPTION:
         Standard equity closing prices, volume, trades (without delivery).
     PARAMETERS:
-        date: str – "DD-MM-YYYY"
+        date: str – "DD-MM-YYYY"    (Note: if user no date given, last trading date is used. if date given, used user date.)
     RETURNS:
         Equity-only bhavcopy
     CATEGORY:
@@ -1287,7 +1327,7 @@ def equity_52week_high_low_eod(date: str):
     DESCRIPTION:
         Stocks hitting 52-week high or low on given date.
     PARAMETERS:
-        date: str – "DD-MM-YYYY"
+        date: str – "DD-MM-YYYY"    (Note: if user no date given, last trading date is used. if date given, used user date.)
     RETURNS:
         List of 52-week high/low stocks
     CATEGORY:
@@ -1337,9 +1377,9 @@ def equity_short_selling(date: str):
     """
     TOOL: equity_short_selling
     DESCRIPTION:
-        Stocks disclosed for short selling on a given date if user no date given last trading date is used.
+        Stocks disclosed for short selling.
     PARAMETERS:
-        date: str – "DD-MM-YYYY"
+        date: str – "DD-MM-YYYY"    (Note: if user no date given, last trading date is used. if date given, used user date.)
     RETURNS:
         Short delivery positions
     CATEGORY:
@@ -1357,8 +1397,7 @@ def surveillance_indicator(date: str):
     DESCRIPTION:
         Stocks under ASM/GSM/Z-category surveillance.
     PARAMETERS:
-        date: str – "DD-MM-YY" (2-digit year) if user no date given last trading date is used.
-    RETURNS:
+        date: str – "DD-MM-YY" (2-digit year) (Note: if user no date given, last trading date is used. if date given, used user date.)
         Surveillance list
     CATEGORY:
         Equity_EOD
@@ -1392,7 +1431,7 @@ def equity_price_band_changes(date: str):
     DESCRIPTION:
         Stocks moved to/from price bands (2%, 5%, 10%, 20%).
     PARAMETERS:
-        date: str – "DD-MM-YYYY"    if user no date given last trading date is used.
+        date: str – "DD-MM-YYYY"    (Note: if user no date given, last trading date is used. if date given, used user date.)
     RETURNS:
         Price band changes
     CATEGORY:
@@ -1410,7 +1449,7 @@ def equity_price_bands(date: str):
     DESCRIPTION:
         Applicable price bands for all stocks on a given EOD.
     PARAMETERS:
-        date: str – "DD-MM-YYYY"    if user no date given last trading date is used.
+        date: str – "DD-MM-YYYY"    (Note: if user no date given, last trading date is used. if date given, used user date.)
     RETURNS:
         Full price band data
     CATEGORY:
@@ -1454,7 +1493,7 @@ def equity_pe_ratio(date: str):
     DESCRIPTION:
         PE, PB, Dividend Yield for all listed companies.
     PARAMETERS:
-        date: str – "DD-MM-YY"  if user no date given last trading date is used.
+        date: str – "DD-MM-YY"  (Note: if user no date given, last trading date is used. if date given, used user date.)
     RETURNS:
         Valuation ratios
     CATEGORY:
@@ -1470,11 +1509,11 @@ def market_cap(date: str):
     """
     TOOL: market_cap
     DESCRIPTION:
-        Market capitalization of all companies.
+        "Market capitalization"(Market Cap(Rs.)), "Total No of Shares Issued"(Issue Size) of all companies.  
     PARAMETERS:
-        date: str – "DD-MM-YY"  if user no date given last trading date is used.
+        date: str – "DD-MM-YY"  (Note: if user no date given, last trading date is used. if date given, used user date.)
     RETURNS:
-        Market cap data
+        Market cap, Issue Size data
     CATEGORY:
         Equity_EOD
     """
@@ -1663,7 +1702,7 @@ def fno_bhavcopy(date: str):
     DESCRIPTION:
         Full F&O bhavcopy (futures + options).
     PARAMETERS:
-        date: str – "DD-MM-YYYY"    if user no date given last trading date is used.
+        date: str – "DD-MM-YYYY"    (Note: if user no date given, last trading date is used. if date given, used user date.)
     RETURNS:
         Complete F&O closing data
     CATEGORY:
@@ -1681,7 +1720,7 @@ def fno_fii_stats(date: str):
     DESCRIPTION:
         FII activity in F&O segment (Index/Stock, Long/Short).
     PARAMETERS:
-        date: str – "DD-MM-YYYY"    if user no date given last trading date is used.
+        date: str – "DD-MM-YYYY"    (Note: if user no date given, last trading date is used. if date given, used user date.)
     RETURNS:
         FII F&O stats
     CATEGORY:
@@ -1699,7 +1738,7 @@ def fno_eod_top10_futures(date: str):
     DESCRIPTION:
         Top 10 most active futures contracts by volume/OI.
     PARAMETERS:
-        date: str – "DD-MM-YYYY"    if user no date given last trading date is used.
+        date: str – "DD-MM-YYYY"    (Note: if user no date given, last trading date is used. if date given, used user date.)
     RETURNS:
         Top 10 futures
     CATEGORY:
@@ -1717,7 +1756,7 @@ def fno_eod_top20_options(date: str):
     DESCRIPTION:
         Top 20 most active options contracts.
     PARAMETERS:
-        date: str – "DD-MM-YYYY"    if user no date given last trading date is used.
+        date: str – "DD-MM-YYYY"    (Note: if user no date given, last trading date is used. if date given, used user date.)
     RETURNS:
         Top 20 options
     CATEGORY:
@@ -1735,7 +1774,7 @@ def fno_ban_list(date: str):
     DESCRIPTION:
         Stocks under F&O ban period.
     PARAMETERS:
-        date: str – "DD-MM-YYYY"    if user no date given last trading date is used.
+        date: str – "DD-MM-YYYY"    (Note: if user no date given, last trading date is used. if date given, used user date.)
     RETURNS:
         Ban list
     CATEGORY:
@@ -1753,7 +1792,7 @@ def fno_mwpl_data(date: str):
     DESCRIPTION:
         Market Wide Position Limits (MWPL) and usage %.
     PARAMETERS:
-        date: str – "DD-MM-YYYY"    if user no date given last trading date is used.
+        date: str – "DD-MM-YYYY"    (Note: if user no date given, last trading date is used. if date given, used user date.)
     RETURNS:
         MWPL report
     CATEGORY:
@@ -1771,7 +1810,7 @@ def fno_combined_oi(date: str):
     DESCRIPTION:
         Combined futures & options open interest.
     PARAMETERS:
-        date: str – "DD-MM-YYYY"    if user no date given last trading date is used.
+        date: str – "DD-MM-YYYY"    (Note: if user no date given, last trading date is used. if date given, used user date.)
     RETURNS:
         OI snapshot
     CATEGORY:
@@ -1789,7 +1828,7 @@ def fno_participant_wise_oi(date: str):
     DESCRIPTION:
         FII, DII, Pro, Client wise open interest.
     PARAMETERS:
-        date: str – "DD-MM-YYYY"    if user no date given last trading date is used.
+        date: str – "DD-MM-YYYY"    (Note: if user no date given, last trading date is used. if date given, used user date.)
     RETURNS:
         Participant OI
     CATEGORY:
@@ -1807,7 +1846,7 @@ def fno_participant_wise_volume(date: str):
     DESCRIPTION:
         FII, DII, Pro, Client wise trading volume in F&O.
     PARAMETERS:
-        date: str – "DD-MM-YYYY"    if user no date given last trading date is used.
+        date: str – "DD-MM-YYYY"    (Note: if user no date given, last trading date is used. if date given, used user date.)
     RETURNS:
         Volume breakdown
     CATEGORY:
@@ -2043,7 +2082,7 @@ def symbol_full_fno_live_data(symbol: str):
         last traded price, volume, open interest, and other key market metrics.
 
     PARAMETERS:
-        symbol: str – Example: "NIFTY", "BANKNIFTY", "RELIANCE"
+        symbol: str – Example: "NIFTY", "BANKNIFTY", "RELIANCE", "TCS", etc.
 
     RETURNS:
         Dict containing full live FnO chain with identifiers for all
@@ -2126,6 +2165,23 @@ def investors_statewise():
     """
     rate_limit()
     return get.state_wise_registered_investors()
+
+
+@mcp.tool()
+def quarterly_financial_results(symbol: str):
+    """
+    TOOL: quarterly_financial_results
+    DESCRIPTION:
+        Quarterly Results (Total Income, Profit Before Tax, Net Profit/ Loss, EARNINGS PER SHARE(Rs))  Note: all Amount in (Lakhs) so cores convert
+    PARAMETERS:
+        symbol: str – Example: "TCS"
+    RETURNS:
+        Quarterly Results.
+    CATEGORY:
+        quarterly_financial_result
+    """
+    rate_limit()
+    return get.quarterly_financial_results(symbol)
 
 
 
