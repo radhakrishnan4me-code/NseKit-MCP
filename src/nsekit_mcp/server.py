@@ -255,6 +255,23 @@ def preopen_stocks_data(category: str = "NIFTY 50"):
     rate_limit()
     return df_to_json(get.pre_market_info(category))
 
+
+@mcp.tool()
+def preopen_futures_data(category: str = "Index Futures"):
+    """
+    TOOL: preopen_futures_data
+    DESCRIPTION:
+        Index Futures or Stock Futures in pre-open with final price, change %.
+    PARAMETERS:
+        category: str – "Index Futures" | "Stock Futures"
+    RETURNS:
+        JSON list of Index or stock Futures
+    CATEGORY:
+        Pre_Market
+    """
+    rate_limit()
+    return df_to_json(get.pre_market_derivatives_info(category))
+
 @mcp.tool()
 def list_of_indices():
     """
@@ -1126,6 +1143,22 @@ def fno_live_futures_data(symbol: str):
     rate_limit()
     return df_to_json(get.fno_live_futures_data(symbol))
 
+@mcp.tool()
+def fno_live_top_20_stocks_contracts(category: str):
+    """
+    TOOL: fno_live_top_20_stocks_contracts
+    DESCRIPTION:
+        Live Top 20 Stocks Futures or Stocks Options data
+    PARAMETERS:
+        category: str – "Stock Futures" or "Stock Options"
+    RETURNS:
+        Top 20 Stocks Futures or Stocks Options
+    CATEGORY:
+        FnO_Live
+    """
+    rate_limit()
+    return df_to_json(get.fno_live_top_20_derivatives_contracts(category))
+
 
 @mcp.tool()
 def fno_live_most_active_futures_contracts(by: str = "Volume"):
@@ -1223,6 +1256,21 @@ def fno_live_change_in_oi():
     rate_limit()
     return df_to_json(get.fno_live_change_in_oi())
 
+@mcp.tool()
+def fno_live_oi_vs_price():
+    """
+    TOOL: fno_live_oi_vs_price
+    DESCRIPTION:
+        Open Interest Vs Price across contracts
+        (Rise in OI and Rise in Price, Rise in OI and Slide in Price, Slide in OI and Slide in Price, Slide in OI and Rise in Price)
+    PARAMETERS: None
+    RETURNS:
+        Open Interest Vs Price across contracts
+    CATEGORY:
+        FnO_Live
+    """
+    rate_limit()
+    return df_to_json(get.fno_live_oi_vs_price())
 
 @mcp.tool()
 def fno_live_active_contracts(symbol: str = "NIFTY", expiry_date: str = None):
@@ -2335,6 +2383,337 @@ def daily_market_wrap() -> str:
         "8. F&O highlights (OI changes, rollovers)\n\n"
         "Use today's date for EOD data.\n"
         "Format as a professional market report."
+    )
+
+
+# @mcp.prompt()
+# def my_intraday_stock_selection() -> str:
+#     """
+#     Primary MCP scanner to identify high-probability NSE intraday trade setups
+#     using market regime, liquidity, institutional activity, price structure,
+#     and F&O confirmation with strict risk controls.
+#     """
+#     return (
+#         "You are a professional Indian stock market analyst operating an intraday trading desk. "
+#         "Your task is to identify high-probability intraday trade setups using ONLY NseKit-MCP tools "
+#         "and real-time NSE data, without assumptions.\n\n"
+
+#         "=============================\n"
+#         "PROMPT 1: MARKET REGIME & RISK FILTER\n"
+#         "=============================\n"
+#         "Use:\n"
+#         "- market_live_status\n"
+#         "- india_vix\n"
+#         "- gift_nifty_live\n"
+#         "- market_advances_declines\n\n"
+#         "Objective:\n"
+#         "Determine the current intraday market regime:\n"
+#         "1) Trending\n"
+#         "2) Range-bound\n"
+#         "3) High-volatility risk-off\n\n"
+#         "Output:\n"
+#         "- Market Bias (Bullish / Bearish / Neutral)\n"
+#         "- Volatility Condition (Low / Normal / High)\n"
+#         "- Allowed Trading Style (Scalp / Momentum / Avoid)\n\n"
+#         "Risk Rules:\n"
+#         "- Rising VIX with skewed advances/declines → reduce position size\n"
+#         "- Flat GIFT NIFTY with low VIX → prefer range-bound strategies\n\n"
+
+#         "=============================\n"
+#         "PROMPT 2: HIGH LIQUIDITY INTRADAY STOCK SELECTION\n"
+#         "=============================\n"
+#         "Use:\n"
+#         "- most_active_equities\n"
+#         "- equity_volume_surge\n"
+#         "- market_live_turnover\n\n"
+#         "Objective:\n"
+#         "Identify the top 20 intraday tradable stocks where:\n"
+#         "- Volume expansion is greater than recent averages\n"
+#         "- Turnover concentration is high\n"
+#         "- Liquidity is suitable for intraday execution\n\n"
+#         "Output:\n"
+#         "Rank stocks based on:\n"
+#         "1) Volume Surge\n"
+#         "2) Turnover\n"
+#         "3) Liquidity Score\n\n"
+
+#         "=============================\n"
+#         "PROMPT 3: INSTITUTIONAL FOOTPRINT (CASH MARKET)\n"
+#         "=============================\n"
+#         "Use:\n"
+#         "- equity_block_deals_live\n"
+#         "- equity_bulk_deals_live\n"
+#         "- fii_dii_activity\n\n"
+#         "Objective:\n"
+#         "Detect institutional participation by identifying:\n"
+#         "- Same-day block or bulk deal activity\n"
+#         "- Alignment with FII directional bias\n\n"
+#         "Output:\n"
+#         "Classify stocks as:\n"
+#         "- Accumulation\n"
+#         "- Distribution\n"
+#         "- Noise\n\n"
+#         "Rule:\n"
+#         "- Avoid retail-only volume spikes without institutional support\n\n"
+
+#         "=============================\n"
+#         "PROMPT 4: PRICE STRUCTURE & INTRADAY LEVELS\n"
+#         "=============================\n"
+#         "Use:\n"
+#         "- equity_live_stock_quote\n"
+#         "- price_chart_stock\n"
+#         "- equity_52week_high_live\n"
+#         "- equity_52week_low_live\n\n"
+#         "Objective:\n"
+#         "Analyze intraday price behavior to identify:\n"
+#         "- Opening range breakout or breakdown candidates\n"
+#         "- VWAP hold or rejection zones\n"
+#         "- Pressure near day high or day low\n\n"
+#         "Output:\n"
+#         "- Trend Bias (Up / Down / Range)\n"
+#         "- Key Levels (VWAP, Day High, Day Low)\n\n"
+
+#         "=============================\n"
+#         "PROMPT 5: FUTURES STRENGTH CONFIRMATION (OPTIONAL)\n"
+#         "=============================\n"
+#         "Use:\n"
+#         "- fno_live_futures_data\n"
+#         "- fno_live_change_in_oi\n"
+#         "- fno_participant_wise_oi\n\n"
+#         "Objective:\n"
+#         "Confirm directional strength using price and open interest behavior:\n"
+#         "- Price up + OI up → Long buildup\n"
+#         "- Price down + OI up → Short buildup\n\n"
+#         "Output:\n"
+#         "- Directional Conviction Score (0–10)\n\n"
+
+#         "=============================\n"
+#         "PROMPT 6: OPTION CHAIN BIAS (ATM FOCUS)\n"
+#         "=============================\n"
+#         "Use:\n"
+#         "- fno_live_option_chain\n"
+#         "- fno_live_most_active_contracts_by_oi\n"
+#         "- symbol_specific_most_active_Calls_or_Puts_or_Contracts_by_OI\n\n"
+#         "Objective:\n"
+#         "Identify options market bias by detecting:\n"
+#         "- ATM Put writing (Bullish bias)\n"
+#         "- ATM Call writing (Bearish bias)\n"
+#         "- Long gamma traps via price and OI divergence\n\n"
+#         "Output:\n"
+#         "- Option Bias (Bullish / Bearish / Neutral)\n"
+#         "- Trap Warning if OI and price diverge\n\n"
+
+#         "=============================\n"
+#         "PROMPT 7: HIGH PROBABILITY TRADE QUALIFIER\n"
+#         "=============================\n"
+#         "Input:\n"
+#         "Outputs from Prompts 1 through 6\n\n"
+#         "Qualification Conditions:\n"
+#         "- Volume expansion present\n"
+#         "- Institutional alignment confirmed\n"
+#         "- Price holding above or below VWAP\n"
+#         "- F&O confirmation (if available)\n"
+#         "- Alignment with overall market regime\n\n"
+#         "Output:\n"
+#         "- Trade Decision (TRADE / NO TRADE)\n"
+#         "- Direction (Long / Short)\n"
+#         "- Confidence Score (%)\n\n"
+
+#         "=============================\n"
+#         "PROMPT 8: EXECUTION & RISK MANAGEMENT PLAN\n"
+#         "=============================\n"
+#         "Use:\n"
+#         "- equity_live_stock_quote\n\n"
+#         "Objective:\n"
+#         "Define a disciplined intraday trade plan with controlled risk:\n"
+#         "- Entry trigger based on price confirmation\n"
+#         "- Technical stop-loss (not fixed points)\n"
+#         "- Target ensuring minimum Risk:Reward of 1:1.5\n\n"
+#         "Output:\n"
+#         "- Exact Entry Price\n"
+#         "- Stop-Loss Level\n"
+#         "- Target Level\n"
+#         "- Position Sizing Suggestion\n"
+#         "- Maximum Loss Per Trade\n\n"
+
+#         "Strict Rules:\n"
+#         "- Use ONLY NseKit-MCP tools\n"
+#         "- Do NOT assume market direction or outcomes\n"
+#         "- No trade recommendations without confirmation\n"
+#         "- Capital preservation is mandatory\n"
+#     )
+
+@mcp.prompt()
+def intraday_scanner_fno_only() -> str:
+    """
+    Primary MCP scanner to identify high-probability NSE intraday trade setups
+    STRICTLY within F&O stocks using liquidity, volume, institutional activity,
+    price structure, derivatives confirmation, and risk control.
+    """
+    return (
+        "You are a professional Indian stock market analyst running an intraday trading desk. "
+        "Your task is to identify high-probability intraday trade setups using ONLY F&O stocks "
+        "and ONLY NseKit-MCP tools, without assumptions or discretionary bias.\n\n"
+
+        "=============================\n"
+        "UNIVERSE DEFINITION (MANDATORY)\n"
+        "=============================\n"
+        "Use:\n"
+        "- index_live_constituents(\"SECURITIES IN F&O\")\n\n"
+        "Rule:\n"
+        "- From start to end, ALL analysis must be restricted to F&O stocks only.\n"
+        "- Non-F&O stocks must be ignored completely.\n\n"
+
+        "=============================\n"
+        "PROMPT 1: MARKET REGIME & RISK FILTER\n"
+        "=============================\n"
+        "Use:\n"
+        "- market_live_status\n"
+        "- india_vix\n"
+        "- gift_nifty_live\n"
+        "- market_advances_declines\n\n"
+        "Objective:\n"
+        "Determine the intraday market regime:\n"
+        "1) Trending\n"
+        "2) Range-bound\n"
+        "3) High-volatility risk-off\n\n"
+        "Output:\n"
+        "- Market Bias (Bullish / Bearish / Neutral)\n"
+        "- Volatility Condition (Low / Normal / High)\n"
+        "- Allowed Trading Style (Scalp / Momentum / Avoid)\n\n"
+        "Risk Rules:\n"
+        "- Rising VIX with skewed advances/declines → reduce position size\n"
+        "- Flat GIFT NIFTY with low VIX → prefer range-bound strategies\n\n"
+
+        "=============================\n"
+        "PROMPT 2: F&O LIQUIDITY & VOLUME FILTER (PRIMARY)\n"
+        "=============================\n"
+        "Use:\n"
+        "- most_active_equities\n"
+        "- equity_volume_surge\n"
+        "- market_live_turnover\n\n"
+        "Objective:\n"
+        "From the F&O universe, identify intraday candidates where:\n"
+        "- Stocks appear in most active equities\n"
+        "- Volume surge is significantly higher than recent averages\n"
+        "- Turnover concentration supports intraday execution\n\n"
+        "Output:\n"
+        "- Ranked list of F&O stocks based on:\n"
+        "  1) Volume Surge\n"
+        "  2) Turnover\n"
+        "  3) Liquidity Quality\n\n"
+
+        "Fallback Rule:\n"
+        "- If no suitable F&O stocks are found using volume and activity filters:\n"
+        "  → Select best candidates directly from index_live_constituents(\"SECURITIES IN F&O\")\n"
+        "  → Prioritize index heavyweights and consistently liquid names\n\n"
+
+        "=============================\n"
+        "PROMPT 3: INSTITUTIONAL FOOTPRINT (CASH MARKET)\n"
+        "=============================\n"
+        "Use:\n"
+        "- equity_block_deals_live\n"
+        "- equity_bulk_deals_live\n"
+        "- fii_dii_activity\n\n"
+        "Objective:\n"
+        "Detect institutional participation in selected F&O stocks:\n"
+        "- Same-day block or bulk deals\n"
+        "- Alignment with overall FII directional activity\n\n"
+        "Output:\n"
+        "- Institutional Tag:\n"
+        "  • Accumulation\n"
+        "  • Distribution\n"
+        "  • Noise\n\n"
+        "Rule:\n"
+        "- Avoid retail-only volume spikes without institutional confirmation\n\n"
+
+        "=============================\n"
+        "PROMPT 4: PRICE STRUCTURE & INTRADAY LEVELS\n"
+        "=============================\n"
+        "Use:\n"
+        "- equity_live_stock_quote\n"
+        "- price_chart_stock\n"
+        "- equity_52week_high_live\n"
+        "- equity_52week_low_live\n\n"
+        "Objective:\n"
+        "Evaluate intraday price structure for F&O stocks:\n"
+        "- Opening range breakout or breakdown\n"
+        "- VWAP hold or rejection\n"
+        "- Strength or weakness near day high / day low\n\n"
+        "Output:\n"
+        "- Trend Bias (Up / Down / Range)\n"
+        "- Key Levels (VWAP, Day High, Day Low)\n\n"
+
+        "=============================\n"
+        "PROMPT 5: FUTURES STRENGTH CONFIRMATION\n"
+        "=============================\n"
+        "Use:\n"
+        "- fno_live_futures_data\n"
+        "- fno_live_change_in_oi\n"
+        "- fno_participant_wise_oi\n\n"
+        "Objective:\n"
+        "Confirm futures market participation:\n"
+        "- Price ↑ + OI ↑ → Long buildup\n"
+        "- Price ↓ + OI ↑ → Short buildup\n\n"
+        "Output:\n"
+        "- Directional Conviction Score (0–10)\n\n"
+
+        "=============================\n"
+        "PROMPT 6: OPTION CHAIN BIAS (ATM FOCUS)\n"
+        "=============================\n"
+        "Use:\n"
+        "- fno_live_option_chain\n"
+        "- fno_live_most_active_contracts_by_oi\n"
+        "- symbol_specific_most_active_Calls_or_Puts_or_Contracts_by_OI\n\n"
+        "Objective:\n"
+        "Assess options market behavior:\n"
+        "- ATM Put writing → Bullish bias\n"
+        "- ATM Call writing → Bearish bias\n"
+        "- Detect long gamma traps via price–OI divergence\n\n"
+        "Output:\n"
+        "- Option Bias (Bullish / Bearish / Neutral)\n"
+        "- Trap Warning (if applicable)\n\n"
+
+        "=============================\n"
+        "PROMPT 7: HIGH PROBABILITY TRADE QUALIFIER\n"
+        "=============================\n"
+        "Input:\n"
+        "- Consolidated outputs from Prompts 1–6\n\n"
+        "Qualification Conditions:\n"
+        "- F&O stock only\n"
+        "- Volume expansion confirmed\n"
+        "- Institutional alignment present\n"
+        "- Price holding above/below VWAP\n"
+        "- Futures / options confirmation\n"
+        "- Market regime alignment\n\n"
+        "Output:\n"
+        "- Trade Decision (TRADE / NO TRADE)\n"
+        "- Direction (Long / Short)\n"
+        "- Confidence Score (%)\n\n"
+
+        "=============================\n"
+        "PROMPT 8: EXECUTION & RISK MANAGEMENT\n"
+        "=============================\n"
+        "Use:\n"
+        "- equity_live_stock_quote\n\n"
+        "Objective:\n"
+        "Create a disciplined intraday execution plan:\n"
+        "- Entry trigger based on confirmation\n"
+        "- Technical stop-loss\n"
+        "- Target with minimum Risk:Reward ≥ 1:1.5\n\n"
+        "Output:\n"
+        "- Entry Price\n"
+        "- Stop-Loss\n"
+        "- Target\n"
+        "- Position Size Suggestion\n"
+        "- Maximum Loss Per Trade\n\n"
+
+        "Strict Rules:\n"
+        "- Use ONLY NseKit-MCP tools\n"
+        "- Use ONLY F&O stocks throughout\n"
+        "- Do NOT assume direction or price\n"
+        "- Risk management is mandatory\n"
+        "- Capital preservation is priority\n"
     )
 
 # =====================================================================
