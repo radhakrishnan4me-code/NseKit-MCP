@@ -523,21 +523,21 @@ def most_active_options(contract_type: str = "Stock", option_type: str = "Call",
 # EQUITY LIVE DATA
 # =====================================================================
 
-@mcp.tool()
-def equity_live_stock_quote(symbol: str):
-    """
-    TOOL: equity_live_stock_quote
-    DESCRIPTION:
-        Full live quote: price, change, volume, VWAP, delivery, 5-level market depth, Sector, Industry, BasicIndustry, totalBuyQuantity, totalSellQuantity, UpperCircuit, LowerCircuit.
-    PARAMETERS:
-        symbol: str – NSE symbol
-    RETURNS:
-        Complete quote + order book
-    CATEGORY:
-        Equity_Live
-    """
-    rate_limit()
-    return df_to_json(get.cm_live_equity_price_info(symbol))
+# @mcp.tool()
+# def equity_live_stock_quote(symbol: str):
+#     """
+#     TOOL: equity_live_stock_quote
+#     DESCRIPTION:
+#         Full live quote: price, change, volume, VWAP, delivery, 5-level market depth, Sector, Industry, BasicIndustry, totalBuyQuantity, totalSellQuantity, UpperCircuit, LowerCircuit.
+#     PARAMETERS:
+#         symbol: str – NSE symbol
+#     RETURNS:
+#         Complete quote + order book
+#     CATEGORY:
+#         Equity_Live
+#     """
+#     rate_limit()
+#     return df_to_json(get.cm_live_equity_price_info(symbol))
 
 @mcp.tool()
 def most_active_equities(by: str = "value"):
@@ -905,12 +905,30 @@ def india_vix(period: str = None, from_date: str = None, to_date: str = None):
 #                       Capital Market Live Data
 # =====================================================================
 
+# @mcp.tool()
+# def equity_live_stock_info(symbol: str):
+#     """
+#     TOOL: equity_live_stock_info
+#     DESCRIPTION:
+#         Live equity master info (face value, ISIN, sector etc.)
+#     PARAMETERS:
+#         symbol: str – e.g., "RELIANCE"
+#     RETURNS:
+#         Equity details
+#     CATEGORY:
+#         CM_Live
+#     """
+#     rate_limit()
+#     # Original: get.cm_live_equity_info("RELIANCE")
+#     return (get.cm_live_equity_info(symbol))
+
 @mcp.tool()
 def equity_live_stock_info(symbol: str):
     """
     TOOL: equity_live_stock_info
     DESCRIPTION:
-        Live equity master info (face value, ISIN, sector etc.)
+        Full live quote:  Meta Data, Trade Information, Price Information, Securities Information, Order Book, etc.
+        (price, change, volume, VWAP, delivery, 5-level market depth, Sector, Industry, BasicIndustry, totalBuyQuantity, totalSellQuantity, UpperCircuit, LowerCircuit, etc.)
     PARAMETERS:
         symbol: str – e.g., "RELIANCE"
     RETURNS:
@@ -920,7 +938,7 @@ def equity_live_stock_info(symbol: str):
     """
     rate_limit()
     # Original: get.cm_live_equity_info("RELIANCE")
-    return (get.cm_live_equity_info(symbol))
+    return (get.cm_live_equity_full_info(symbol))
 
 
 @mcp.tool()
@@ -1794,7 +1812,7 @@ def fno_eod_top10_futures(date: str):
     """
     rate_limit()
     # Original: get.fno_eod_top10_fut("17-10-2025")
-    return (get.fno_eod_top10_fut(date))
+    return df_to_json(get.fno_eod_top10_fut(date))
 
 
 @mcp.tool()
@@ -1812,7 +1830,7 @@ def fno_eod_top20_options(date: str):
     """
     rate_limit()
     # Original: get.fno_eod_top20_opt("17-10-2025")
-    return (get.fno_eod_top20_opt(date))
+    return df_to_json(get.fno_eod_top20_opt(date))
 
 
 @mcp.tool()
@@ -2715,6 +2733,7 @@ def intraday_scanner_fno_only() -> str:
         "- Risk management is mandatory\n"
         "- Capital preservation is priority\n"
     )
+
 
 # =====================================================================
 # START SERVER

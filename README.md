@@ -43,13 +43,13 @@ Add the following configuration to your MCP server configuration file:
 
 | Tool | Description |
 |------|------------|
-| `market_status()` | Market open/close, Nifty, Gift Nifty, Mcap |
-| `stock_quote("RELIANCE")` | Live price + 5-level depth + delivery |
-| `option_chain("NIFTY", True)` | Full Nifty/BankNifty option chain + Max Pain |
-| `bhavcopy_with_delivery("02-12-2025")` | Full day closing + delivery % |
-| `fii_dii_activity("Nse")` | Latest FII/DII net buying/selling |
-| `current_ipos()` | All live Mainboard + SME IPOs with subscription |
-| `hit_52week_high()` | Stocks hitting 52-week high today |
+| `market_live_status()` | Market open/close, Nifty, Gift Nifty, Mcap |
+| `equity_live_stock_info("RELIANCE")` | Live price + 5-level depth + delivery |
+| `fno_live_option_chain("NIFTY","27-Jan-2026")` | Nifty/BankNifty option chain data |
+| `equity_eod_bhavcopy_delivery("02-12-2025")` | Full day closing + delivery % |
+| `fii_dii_activity()` | Latest FII/DII net buying/selling |
+| `ipo_current_list()` | All live Mainboard + SME IPOs with subscription |
+| `equity_52week_high_live()` | Stocks hitting 52-week high today |
 
 All tools return clean JSON arrays.
 
