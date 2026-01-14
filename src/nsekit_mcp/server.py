@@ -501,6 +501,25 @@ def expiry_dates(symbol: str = "NIFTY", filter_type: str = None):
     return df_to_json(get.fno_expiry_dates(symbol, filter_type))
 
 @mcp.tool()
+def fno_expiry_dates_and_strikePrice(symbol: str = "NIFTY"):
+    """
+    TOOL: fno_expiry_dates_and_strikePrice
+    DESCRIPTION:
+        Get All expiry dates & strikePrice for given symbol
+    PARAMETERS:
+        symbol: str – Stock or index
+    RETURNS:
+        JSON of expiry dates & strikePrice
+    CATEGORY:
+        FnO_Reference
+    EXAMPLES:
+        (get.fno_expiry_dates(Nifty))
+        (get.fno_expiry_dates("TCS"))
+    """
+    rate_limit()
+    return df_to_json(get.fno_expiry_dates_raw(symbol))
+
+@mcp.tool()
 def most_active_options(contract_type: str = "Stock", option_type: str = "Call", sort_by: str = "Volume"):
     """
     TOOL: most_active_options
@@ -2066,18 +2085,38 @@ def sebi_data_pages(page: int = 1):
 
 
 @mcp.tool()
-def price_chart_nifty(timeframe: str = "1D"):
+def price_chart_index(index: str = "NIFTY 50", timeframe: str = "1D"):
     """
-    TOOL: price_chart_nifty
+    TOOL: price_chart_index
 
     DESCRIPTION:
-        Retrieves intraday or historical price chart data for the NIFTY 50 index 
+        Retrieves intraday or historical price chart data for the NIFTY Indices 
         based on the selected timeframe.  
-        The tool internally connects to the NSE Next-API `getGraphChart` endpoint,
+        The tool internally connects to the NSE Next-API `getIndexChart` endpoint,
         handles cookie/session rotation automatically, and normalizes the response 
         into a clean DataFrame before converting it to JSON.
 
     PARAMETERS:
+        index: str – e.g. "NIFTY 50", "SECURITIES IN F&O"(F&O stocks)
+            "NIFTY AUTO", 
+            "NIFTY CHEMICALS",
+            "NIFTY CONSUMER DURABLES",
+            "NIFTY FINANCIAL SERVICES EX-BANK",
+            "NIFTY FINANCIAL SERVICES 25/50",
+            "NIFTY FMCG",
+            "NIFTY HEALTHCARE INDEX",
+            "NIFTY IT",
+            "NIFTY MEDIA",
+            "NIFTY METAL",
+            "NIFTY MIDSMALL HEALTHCARE",
+            "NIFTY MIDSMALL FINANCIAL SERVICES",
+            "NIFTY MIDSMALL IT & TELECOM",
+            "NIFTY OIL & GAS",
+            "NIFTY PHARMA",
+            "NIFTY PSU BANK",
+            "NIFTY PRIVATE BANK",
+            "NIFTY REALTY",
+            "NIFTY500 HEALTHCARE"  (for more index use list_of_indices() tool)
         timeframe (str):
             Defines the chart duration or lookback period.
             Examples:
@@ -2099,7 +2138,7 @@ def price_chart_nifty(timeframe: str = "1D"):
         (All market chart–related tools fall under this category.)
     """
     rate_limit()
-    return df_to_json(get.nifty_chart(timeframe))
+    return df_to_json(get.index_chart(index, timeframe))
 
 
 @mcp.tool()
@@ -2136,6 +2175,57 @@ def price_chart_stock(symbol: str, timeframe: str = "1D"):
     """
     rate_limit()
     return df_to_json(get.stock_chart(symbol, timeframe))
+
+
+@mcp.tool()
+def fno_intraday_chart(symbol: str, inst_type: str, expiry: str, strike: str = ""):
+    """
+    TOOL: fno_intraday_chart
+
+    DESCRIPTION:
+        Retrieves intraday chart data for the futures/options contracts (Stock + Index).
+        Examples:
+            get.fno_chart("TCS", "FUTSTK","30-12-2025")
+            get.fno_chart("NIFTY", "OPTIDX","20-01-2026","PE25700")
+
+    PARAMETERS:
+        symbol   : Stock or Index
+        inst_type: FUTSTK, OPTSTK, FUTIDX, OPTIDX   (FUTSTK-Stock Futures, OPTSTK-Stock Options, FUTIDX-Index Futures, OPTIDX-Index Options)
+        expiry   : DD-MM-YYYY (use fno_expiry_dates_and_strikePrice to find available expiry & strike Price but expiry date must be (DD-MM-YYYY) this format only)
+        strike   : CE/PE + price (options need CE/PE)
+
+    RETURNS:
+        JSON chart data containing:
+            - datetime_utc (string): Timestamp in UTC formatted as "%Y-%m-%d %H:%M:%S"
+            - price (float): stock price at that timestamp
+
+    CATEGORY:
+        ChartData
+        (All market chart–related tools fall under this category.)
+    """
+    rate_limit()
+    return df_to_json(get.fno_chart(symbol, inst_type, expiry, strike))
+
+
+@mcp.tool()
+def price_chart_india_vix():
+    """
+    TOOL: price_chart_india_vix
+
+    DESCRIPTION:
+        Retrieves intraday chart data for the India VIX Index.
+
+    RETURNS:
+        JSON chart data containing:
+            - datetime_utc (string): Timestamp in UTC formatted as "%Y-%m-%d %H:%M:%S"
+            - price (float): India VIX Index at that timestamp
+            - flag (string): Event marker provided by NSE (e.g., "PO"- Pre Open Market, "NM"- Normal Market, etc.) 
+
+    CATEGORY:
+        ChartData (India Volatility Index = India VIX)
+    """
+    rate_limit()
+    return df_to_json(get.india_vix_chart())
 
 
 @mcp.tool()
@@ -2733,7 +2823,6 @@ def intraday_scanner_fno_only() -> str:
         "- Risk management is mandatory\n"
         "- Capital preservation is priority\n"
     )
-
 
 # =====================================================================
 # START SERVER
