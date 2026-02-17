@@ -473,7 +473,7 @@ def fno_live_option_chain(symbol: str, expiry: str = None, compact: bool = False
     return df_to_json(get.fno_live_option_chain(symbol, expiry_date=expiry, oi_mode=mode))
 
 @mcp.tool()
-def expiry_dates(symbol: str = "NIFTY", filter_type: str = None):
+def fno_expiry_dates(symbol: str = "NIFTY", filter_type: str = None):
     """
     TOOL: expiry_dates
     DESCRIPTION:
@@ -1142,23 +1142,37 @@ def corporate_qtly_shareholding_patterns():
     rate_limit()
     return df_to_json(get.cm_live_qtly_shareholding_patterns())
 
-
 @mcp.tool()
-def corporate_annual_reports(symbol: str = None, from_date: str = None, to_date: str = None):
+def corporate_annual_reports():
     """
     TOOL: corporate_annual_reports
     DESCRIPTION:
-        Annual reports (all or symbol-specific)
-    PARAMETERS:
-        symbol: str – optional
-        from_date/to_date: str – optional
+        Latest 20 Annual reports with pdf links
+    PARAMETERS: None
     RETURNS:
-        Annual report links/data
+        Latest 20 Annual reports
     CATEGORY:
         CM_Live
     """
     rate_limit()
-    return df_to_json(get.cm_live_hist_annual_reports(symbol, from_date, to_date))
+    return df_to_json(get.recent_annual_reports())
+
+@mcp.tool()
+def corporate_bsr_reports(symbol: str = None, from_date: str = None, to_date: str = None):
+    """
+    TOOL: corporate_bsr_reports
+    DESCRIPTION:
+        Business Responsibility and Sustainability Reports (all or symbol-specific)
+    PARAMETERS:
+        symbol: str – optional
+        from_date/to_date: str – optional
+    RETURNS:
+        Business Responsibility and Sustainability Reports links/data
+    CATEGORY:
+        CM_Live
+    """
+    rate_limit()
+    return df_to_json(get.cm_live_hist_br_sr(symbol, from_date, to_date))
 
 # =====================================================================
 #                          FnO Live Data
