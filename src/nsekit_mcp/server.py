@@ -2879,9 +2879,15 @@ class BearerAuthMiddleware:
 
 def main() -> None:
     import uvicorn
+    from mcp.server.streamable_http import TransportSecuritySettings
 
     # Create the MCP Starlette app for streamable-http transport
-    mcp_app = mcp.streamable_http_app()
+    # Allow all hosts/origins — auth is handled by BearerAuthMiddleware
+    mcp_app = mcp.streamable_http_app(
+        transport_security=TransportSecuritySettings(
+            allowed_origins=["*"],
+        ),
+    )
 
     # Wrap with bearer auth middleware
     app = BearerAuthMiddleware(mcp_app)
