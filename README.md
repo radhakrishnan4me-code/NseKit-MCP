@@ -43,7 +43,7 @@ All tools return clean JSON arrays.
 
 ```bash
 # 1. Clone the repo
-git clone https://github.com/Prasad1612/NseKit-MCP.git
+git clone https://github.com/radhakrishnan4me-code/NseKit-MCP.git
 cd NseKit-MCP
 
 # 2. Create environment file
