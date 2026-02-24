@@ -2,8 +2,13 @@ from mcp.server.fastmcp import FastMCP
 from NseKit import NseKit, Moneycontrol
 import pandas as pd
 import time
-import json                      
-from threading import Lock 
+import json
+import os
+from threading import Lock
+from starlette.applications import Starlette
+from starlette.routing import Mount
+from starlette.requests import Request
+from starlette.responses import Response
 
 # ================================================================
 #                   RATE LIMIT CONTROL (NSE Safe)
@@ -22,6 +27,14 @@ def rate_limit():
         if elapsed < RATE_LIMIT_SECONDS:
             time.sleep(RATE_LIMIT_SECONDS - elapsed)
         _last_call_time = time.time()
+
+# ================================================================
+#                   CONFIGURATION (from environment)
+# ================================================================
+
+MCP_BEARER_TOKEN = os.environ.get("MCP_BEARER_TOKEN", "")
+MCP_HOST = os.environ.get("MCP_HOST", "0.0.0.0")
+MCP_PORT = int(os.environ.get("MCP_PORT", "8000"))
 
 # ================================================================
 #                   MCP + NseKit Initialization
@@ -2839,12 +2852,44 @@ def intraday_scanner_fno_only() -> str:
     )
 
 # =====================================================================
+# BEARER AUTH MIDDLEWARE (for HTTP Streamable transport)
+# =====================================================================
+
+class BearerAuthMiddleware:
+    """
+    ASGI middleware that validates Bearer token in the Authorization header.
+    If MCP_BEARER_TOKEN is empty/unset, authentication is disabled (pass-through).
+    """
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] == "http" and MCP_BEARER_TOKEN:
+            headers = dict(scope.get("headers", []))
+            auth_header = headers.get(b"authorization", b"").decode()
+            if not auth_header.startswith("Bearer ") or auth_header[7:] != MCP_BEARER_TOKEN:
+                response = Response("Unauthorized", status_code=401)
+                await response(scope, receive, send)
+                return
+        await self.app(scope, receive, send)
+
+# =====================================================================
 # START SERVER
 # =====================================================================
 
-# # Run with streamable HTTP transport
-# if __name__ == "__main__":
-#     mcp.run(transport="streamable-http")
-
 def main() -> None:
-    mcp.run()
+    import uvicorn
+
+    # Create the MCP Starlette app for streamable-http transport
+    mcp_app = mcp.streamable_http_app()
+
+    # Wrap with bearer auth middleware
+    app = BearerAuthMiddleware(mcp_app)
+
+    print(f"NseKit-MCP Server starting on {MCP_HOST}:{MCP_PORT}")
+    if MCP_BEARER_TOKEN:
+        print("Bearer authentication: ENABLED")
+    else:
+        print("Bearer authentication: DISABLED (set MCP_BEARER_TOKEN to enable)")
+
+    uvicorn.run(app, host=MCP_HOST, port=MCP_PORT)

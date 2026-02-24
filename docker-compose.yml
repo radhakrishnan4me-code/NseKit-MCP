@@ -1,0 +1,11 @@
+services:
+  nsekit-mcp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nsekit-mcp
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "8001:8000"

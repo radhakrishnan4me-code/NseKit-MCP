@@ -8,7 +8,9 @@ requires-python = ">=3.12"
 dependencies = [
     "mcp[cli]>=1.22.0",
     "nsekit>=0.0.19",
-    "typer>=0.20.0"
+    "typer>=0.20.0",
+    "starlette>=0.40.0",
+    "uvicorn>=0.30.0"
 ]
 
 [project.scripts]
