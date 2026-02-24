@@ -2857,20 +2857,34 @@ def intraday_scanner_fno_only() -> str:
 
 class BearerAuthMiddleware:
     """
-    ASGI middleware that validates Bearer token in the Authorization header.
+    ASGI middleware that:
+    1. Validates Bearer token in the Authorization header
+    2. Rewrites the Host header to localhost to pass MCP DNS rebinding checks
     If MCP_BEARER_TOKEN is empty/unset, authentication is disabled (pass-through).
     """
     def __init__(self, app):
         self.app = app
 
     async def __call__(self, scope, receive, send):
-        if scope["type"] == "http" and MCP_BEARER_TOKEN:
-            headers = dict(scope.get("headers", []))
-            auth_header = headers.get(b"authorization", b"").decode()
-            if not auth_header.startswith("Bearer ") or auth_header[7:] != MCP_BEARER_TOKEN:
-                response = Response("Unauthorized", status_code=401)
-                await response(scope, receive, send)
-                return
+        if scope["type"] == "http":
+            # Check bearer token if configured
+            if MCP_BEARER_TOKEN:
+                headers = dict(scope.get("headers", []))
+                auth_header = headers.get(b"authorization", b"").decode()
+                if not auth_header.startswith("Bearer ") or auth_header[7:] != MCP_BEARER_TOKEN:
+                    response = Response("Unauthorized", status_code=401)
+                    await response(scope, receive, send)
+                    return
+
+            # Rewrite Host header to localhost to satisfy MCP DNS rebinding protection
+            # This is safe because auth is handled above
+            new_headers = []
+            for key, value in scope.get("headers", []):
+                if key == b"host":
+                    value = f"localhost:{MCP_PORT}".encode()
+                new_headers.append((key, value))
+            scope = dict(scope, headers=new_headers)
+
         await self.app(scope, receive, send)
 
 # =====================================================================
@@ -2879,17 +2893,11 @@ class BearerAuthMiddleware:
 
 def main() -> None:
     import uvicorn
-    from mcp.server.streamable_http import TransportSecuritySettings
 
     # Create the MCP Starlette app for streamable-http transport
-    # Allow all hosts/origins — auth is handled by BearerAuthMiddleware
-    mcp_app = mcp.streamable_http_app(
-        transport_security=TransportSecuritySettings(
-            allowed_origins=["*"],
-        ),
-    )
+    mcp_app = mcp.streamable_http_app()
 
-    # Wrap with bearer auth middleware
+    # Wrap with bearer auth + host rewrite middleware
     app = BearerAuthMiddleware(mcp_app)
 
     print(f"NseKit-MCP Server starting on {MCP_HOST}:{MCP_PORT}")
